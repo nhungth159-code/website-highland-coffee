@@ -202,9 +202,10 @@ export default function CareersPage() {
     const errs = validate();
     if (Object.keys(errs).length) { setErrors(errs); return; }
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1200));
+    await new Promise((r) => setTimeout(r, 800));
+    const appId = `APP-${Math.floor(100000 + Math.random() * 900000)}`;
     saveApplication({
-      id: `APP-${Math.floor(100000 + Math.random() * 900000)}`,
+      id: appId,
       jobTitle: applyJob!.title,
       dept: applyJob!.dept,
       location: applyJob!.location,
@@ -216,6 +217,12 @@ export default function CareersPage() {
       appliedAt: new Date().toISOString(),
       status: "new",
     });
+    // Fire-and-forget — don't block the UI on email delivery
+    fetch("/api/send-confirmation", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: form.name, email: form.email, jobTitle: applyJob!.title, appId }),
+    }).catch(() => {});
     setLoading(false);
     setSubmitted(true);
   };
