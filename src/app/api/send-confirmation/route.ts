@@ -1,4 +1,4 @@
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 import { NextRequest, NextResponse } from "next/server";
 
 function buildEmail(name: string, jobTitle: string, appId: string): string {
@@ -79,11 +79,12 @@ function buildEmail(name: string, jobTitle: string, appId: string): string {
 }
 
 export async function POST(request: NextRequest) {
-  if (!process.env.RESEND_API_KEY) {
-    return NextResponse.json({ skipped: true, reason: "RESEND_API_KEY not configured" });
-  }
+  const { GMAIL_USER, GMAIL_APP_PASSWORD } = process.env;
 
-  const resend = new Resend(process.env.RESEND_API_KEY);
+  if (!GMAIL_USER || !GMAIL_APP_PASSWORD) {
+    console.warn("Email env vars not configured — skipping confirmation email.");
+    return NextResponse.json({ skipped: true, reason: "Email not configured" });
+  }
 
   let name: string, email: string, jobTitle: string, appId: string;
   try {
@@ -96,17 +97,21 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
-  const { data, error } = await resend.emails.send({
-    from: "Highlands Coffee Careers <onboarding@resend.dev>",
-    to: email,
-    subject: `We received your application — Highlands Coffee`,
-    html: buildEmail(name, jobTitle, appId),
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: { user: GMAIL_USER, pass: GMAIL_APP_PASSWORD },
   });
 
-  if (error) {
-    console.error("Resend error:", error);
-    return NextResponse.json({ error }, { status: 500 });
+  try {
+    await transporter.sendMail({
+      from: `"Highlands Coffee Careers" <${GMAIL_USER}>`,
+      to: email,
+      subject: "We received your application — Highlands Coffee",
+      html: buildEmail(name, jobTitle, appId),
+    });
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    console.error("Mail error:", err);
+    return NextResponse.json({ error: String(err) }, { status: 500 });
   }
-
-  return NextResponse.json({ success: true, id: data?.id });
 }
