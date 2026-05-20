@@ -81,6 +81,7 @@ export default function CartDrawer({ cart, isOpen, onClose, onUpdate, onClearCar
       items: cart.map((i) => ({ name: i.name, price: i.price, quantity: i.quantity, img: i.img })),
       subtotal,
       deliveryFee,
+      discount: promoDiscount,
       total,
       status: "pending",
     });
@@ -557,9 +558,24 @@ export default function CartDrawer({ cart, isOpen, onClose, onUpdate, onClearCar
                   <span className="font-medium">{fmt(i.price * i.quantity)}</span>
                 </div>
               ))}
-              <div className="border-t border-[#3B1F0A]/8 mt-2 pt-2 flex justify-between font-bold text-[#3B1F0A]">
-                <span>Total (COD)</span>
-                <span>{fmt(total)}</span>
+              <div className="border-t border-[#3B1F0A]/8 mt-2 pt-2 space-y-1 text-sm">
+                <div className="flex justify-between text-[#3B1F0A]/50">
+                  <span>Subtotal</span><span>{fmt(subtotal)}</span>
+                </div>
+                {deliveryFee > 0 && (
+                  <div className="flex justify-between text-[#3B1F0A]/50">
+                    <span>Delivery</span><span>{fmt(deliveryFee)}</span>
+                  </div>
+                )}
+                {promoDiscount > 0 && (
+                  <div className="flex justify-between text-green-600 font-medium">
+                    <span>Promo discount</span><span>−{fmt(promoDiscount)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between font-bold text-[#3B1F0A] pt-1 border-t border-[#3B1F0A]/8">
+                  <span>Total (COD)</span>
+                  <span>{fmt(total)}</span>
+                </div>
               </div>
             </div>
 

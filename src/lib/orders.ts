@@ -22,6 +22,7 @@ export interface StoredOrder {
   }[];
   subtotal: number;
   deliveryFee: number;
+  discount?: number;
   total: number;
   status: OrderStatus;
 }

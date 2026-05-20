@@ -299,6 +299,12 @@ export default function TrackOrderPage({
                 {order.deliveryFee === 0 ? "Free" : fmt(order.deliveryFee)}
               </span>
             </div>
+            {(order.discount ?? 0) > 0 && (
+              <div className="flex justify-between text-green-600 font-medium">
+                <span>Promo discount</span>
+                <span>−{fmt(order.discount!)}</span>
+              </div>
+            )}
             <div
               className="flex justify-between font-bold text-[#3B1F0A] pt-2 border-t border-[#3B1F0A]/8"
               style={{ fontFamily: "var(--font-playfair), serif" }}
