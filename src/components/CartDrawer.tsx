@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import Image from "next/image";
 import { saveOrder } from "@/lib/orders";
 
@@ -489,9 +490,20 @@ export default function CartDrawer({ cart, isOpen, onClose, onUpdate, onClearCar
             <p className="text-xs text-[#3B1F0A]/35 mb-5">
               Payment collected at the door.
             </p>
+            <Link
+              href={`/track/${orderNum}`}
+              onClick={handleClose}
+              className="w-full max-w-xs bg-[#3B1F0A] text-white py-3.5 font-bold tracking-wider text-sm hover:bg-[#1A0D00] transition-colors flex items-center justify-center gap-2 mb-3"
+            >
+              <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 6v6l4 2" strokeLinecap="round" />
+              </svg>
+              Track My Order
+            </Link>
             <button
               onClick={handleClose}
-              className="w-full max-w-xs bg-[#C8820A] text-white py-3.5 font-bold tracking-wider text-sm hover:bg-[#3B1F0A] transition-colors"
+              className="w-full max-w-xs border border-[#3B1F0A]/15 text-[#3B1F0A]/55 py-3 font-semibold text-sm hover:text-[#3B1F0A] hover:border-[#3B1F0A]/30 transition-colors"
             >
               Back to Menu
             </button>
