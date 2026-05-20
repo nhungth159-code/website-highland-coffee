@@ -4,7 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
-const IMG = "https://images.unsplash.com/photo-";
+const U = "https://images.unsplash.com/photo-";
+const P = "https://plus.unsplash.com/premium_photo-";
 const q = "?auto=format&fit=crop&w=400&q=80";
 
 const MENU = {
@@ -13,25 +14,25 @@ const MENU = {
       name: "Cà Phê Sữa Đá",
       desc: "Vietnam's iconic iced coffee — rich Robusta with velvety condensed milk over hand-chipped ice.",
       price: "35,000₫",
-      img: `${IMG}jODz47eM1w8${q}`,
+      img: `${U}1471922597728-92f81bfe2445${q}`,
     },
     {
       name: "Bạc Xỉu",
       desc: "Mild espresso with a generous pour of sweetened milk — light, smooth, and endlessly comforting.",
       price: "35,000₫",
-      img: `${IMG}hJJAyrscf_A${q}`,
+      img: `${U}1595177924779-dbe82554cc24${q}`,
     },
     {
       name: "Highlands Espresso",
       desc: "Double-shot espresso from single-origin Arabica grown at 1,500m in Cầu Đất, Đà Lạt.",
       price: "45,000₫",
-      img: `${IMG}BnrKDRn5sjg${q}`,
+      img: `${U}1475241404975-c3ae90fdd9e6${q}`,
     },
     {
       name: "Cold Brew",
       desc: "18-hour cold-steeped highland beans — silky, low-acid, with a naturally sweet finish.",
       price: "55,000₫",
-      img: `${IMG}8yxIau08-58${q}`,
+      img: `${U}1545285179-78da7c2b8f83${q}`,
     },
   ],
   Tea: [
@@ -39,25 +40,25 @@ const MENU = {
       name: "Trà Đào Cam Sả",
       desc: "Sun-ripened peaches, fresh orange slices, and fragrant lemongrass in a golden iced tea.",
       price: "45,000₫",
-      img: `${IMG}FnTWsBohkdo${q}`,
+      img: `${U}1597481499666-130f8eb2c9cd${q}`,
     },
     {
       name: "Trà Xanh Sữa",
       desc: "Matcha milk tea with hand-blended Da Lat green tea and a hint of toasted rice.",
       price: "50,000₫",
-      img: `${IMG}rW_EmeV7dEU${q}`,
+      img: `${U}1560148196-df61132466ce${q}`,
     },
     {
       name: "Hồng Trà Sữa",
       desc: "Black milk tea with creamy foam topping — warm, bold, and perfectly sweet.",
       price: "55,000₫",
-      img: `${IMG}dXRRaiF_b_U${q}`,
+      img: `${U}1641919089328-5d5063828c4f${q}`,
     },
     {
       name: "Trà Tắc Tươi",
       desc: "Fresh-squeezed kumquat with premium jasmine tea — bright, tangy, and refreshing.",
       price: "40,000₫",
-      img: `${IMG}hyDjDI9d6wQ${q}`,
+      img: `${P}1694825174350-cb9f27949883${q}`,
     },
   ],
   Food: [
@@ -65,25 +66,25 @@ const MENU = {
       name: "Bánh Mì Bơ",
       desc: "Toasted Vietnamese baguette with cultured butter and fleur de sel — a simple morning ritual.",
       price: "25,000₫",
-      img: `${IMG}wRU27yGfSLQ${q}`,
+      img: `${U}1618111415321-b406d66958de${q}`,
     },
     {
       name: "Croissant Hạnh Nhân",
       desc: "Flaky almond croissant baked fresh each morning, filled with house-made frangipane.",
       price: "45,000₫",
-      img: `${IMG}ZV1acMlN9T0${q}`,
+      img: `${U}1741916540141-f36e29290f28${q}`,
     },
     {
       name: "Bánh Phô Mai Matcha",
       desc: "Green tea cheesecake on a toasted sesame crust — soft, fragrant, and lightly bitter.",
       price: "55,000₫",
-      img: `${IMG}LGNxQzYmeUk${q}`,
+      img: `${U}1533134242443-d4fd215305ad${q}`,
     },
     {
       name: "Tiramisu Cà Phê",
       desc: "House tiramisu soaked in Highland Cold Brew, dusted with premium Vietnamese cacao.",
       price: "60,000₫",
-      img: `${IMG}BfJk5g7JCz4${q}`,
+      img: `${P}1695028378268-38e3432c5cf0${q}`,
     },
   ],
 } as const;
@@ -102,21 +103,21 @@ const FEATURED = [
     desc: "Vietnam's iconic iced coffee — rich Robusta with velvety condensed milk over hand-chipped ice.",
     price: "35,000₫",
     tag: "Classic",
-    img: `${IMG}jODz47eM1w8?auto=format&fit=crop&w=800&q=80`,
+    img: `${U}1471922597728-92f81bfe2445?auto=format&fit=crop&w=800&q=80`,
   },
   {
     name: "Trà Đào Cam Sả",
     desc: "Sun-ripened peaches, orange slices, and fragrant lemongrass in a golden iced tea.",
     price: "45,000₫",
     tag: "Bestseller",
-    img: `${IMG}FnTWsBohkdo?auto=format&fit=crop&w=800&q=80`,
+    img: `${U}1597481499666-130f8eb2c9cd?auto=format&fit=crop&w=800&q=80`,
   },
   {
     name: "Highland Cold Brew",
     desc: "Single-origin Arabica from Cầu Đất farm, cold-steeped 18 hours for unmatched silky depth.",
     price: "55,000₫",
     tag: "Premium",
-    img: `${IMG}8yxIau08-58?auto=format&fit=crop&w=800&q=80`,
+    img: `${U}1545285179-78da7c2b8f83?auto=format&fit=crop&w=800&q=80`,
   },
 ];
 
