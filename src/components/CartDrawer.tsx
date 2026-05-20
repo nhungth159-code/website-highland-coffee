@@ -25,6 +25,10 @@ type Step = "cart" | "checkout" | "success";
 const DELIVERY_FEE = 15000;
 const FREE_THRESHOLD = 100000;
 
+const PROMO_CODES: Record<string, { label: string; pct: number }> = {
+  HIGHLANDS25: { label: "25% off", pct: 25 },
+};
+
 const fmt = (n: number) => n.toLocaleString("vi-VN") + "₫";
 
 export default function CartDrawer({ cart, isOpen, onClose, onUpdate, onClearCart }: Props) {
@@ -33,11 +37,26 @@ export default function CartDrawer({ cart, isOpen, onClose, onUpdate, onClearCar
   const [errors, setErrors] = useState<{ name?: string; phone?: string; address?: string }>({});
   const [loading, setLoading] = useState(false);
   const [orderNum, setOrderNum] = useState("");
+  const [promoInput, setPromoInput] = useState("");
+  const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
+  const [promoError, setPromoError] = useState("");
 
   const subtotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
   const deliveryFee = subtotal >= FREE_THRESHOLD ? 0 : DELIVERY_FEE;
-  const total = subtotal + deliveryFee;
+  const promoDiscount = appliedPromo ? Math.round(subtotal * PROMO_CODES[appliedPromo].pct / 100) : 0;
+  const total = subtotal + deliveryFee - promoDiscount;
   const count = cart.reduce((s, i) => s + i.quantity, 0);
+
+  const applyPromo = () => {
+    const code = promoInput.trim().toUpperCase();
+    if (PROMO_CODES[code]) {
+      setAppliedPromo(code);
+      setPromoError("");
+      setPromoInput("");
+    } else {
+      setPromoError("Invalid code. Try HIGHLANDS25.");
+    }
+  };
 
   const validate = () => {
     const e: typeof errors = {};
@@ -77,6 +96,9 @@ export default function CartDrawer({ cart, isOpen, onClose, onUpdate, onClearCar
         setStep("cart");
         setForm({ name: "", phone: "", address: "", notes: "" });
         setErrors({});
+        setAppliedPromo(null);
+        setPromoInput("");
+        setPromoError("");
       }
     }, 350);
   };
@@ -222,6 +244,12 @@ export default function CartDrawer({ cart, isOpen, onClose, onUpdate, onClearCar
                       Add {fmt(FREE_THRESHOLD - subtotal)} more for free delivery
                     </p>
                   )}
+                  {promoDiscount > 0 && appliedPromo && (
+                    <div className="flex justify-between text-green-600 font-medium">
+                      <span>Promo ({PROMO_CODES[appliedPromo].label})</span>
+                      <span>−{fmt(promoDiscount)}</span>
+                    </div>
+                  )}
                   <div
                     className="flex justify-between font-bold text-[#3B1F0A] pt-2 border-t border-[#3B1F0A]/8"
                     style={{ fontFamily: "var(--font-playfair), serif" }}
@@ -286,6 +314,12 @@ export default function CartDrawer({ cart, isOpen, onClose, onUpdate, onClearCar
                     <span className="font-medium text-[#3B1F0A]">{fmt(i.price * i.quantity)}</span>
                   </div>
                 ))}
+                {promoDiscount > 0 && appliedPromo && (
+                  <div className="flex justify-between text-sm py-0.5 text-green-600 font-medium">
+                    <span>Promo ({PROMO_CODES[appliedPromo].label})</span>
+                    <span>−{fmt(promoDiscount)}</span>
+                  </div>
+                )}
                 <div
                   className="border-t border-[#3B1F0A]/8 mt-2 pt-2 flex justify-between font-bold text-[#3B1F0A]"
                   style={{ fontFamily: "var(--font-playfair), serif" }}
@@ -371,6 +405,48 @@ export default function CartDrawer({ cart, isOpen, onClose, onUpdate, onClearCar
                     />
                   </div>
                 </div>
+              </div>
+
+              {/* Promo Code */}
+              <div>
+                <p className="text-[11px] font-semibold text-[#3B1F0A]/45 tracking-widest uppercase mb-3">
+                  Promo Code
+                </p>
+                {appliedPromo ? (
+                  <div className="flex items-center justify-between bg-green-50 border border-green-200 px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <svg width="14" height="14" fill="none" stroke="#16a34a" strokeWidth="2.5" viewBox="0 0 24 24">
+                        <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                      <span className="text-green-700 font-bold text-sm tracking-wider">{appliedPromo}</span>
+                      <span className="text-green-600 text-xs">· {PROMO_CODES[appliedPromo].label} applied</span>
+                    </div>
+                    <button
+                      onClick={() => setAppliedPromo(null)}
+                      className="text-xs text-green-600 hover:text-red-500 transition-colors"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={promoInput}
+                      onChange={(e) => { setPromoInput(e.target.value); setPromoError(""); }}
+                      onKeyDown={(e) => e.key === "Enter" && applyPromo()}
+                      placeholder="Enter promo code"
+                      className="flex-1 border border-[#3B1F0A]/15 px-4 py-3 text-sm text-[#3B1F0A] bg-white placeholder-[#3B1F0A]/25 outline-none focus:border-[#C8820A] transition-colors uppercase"
+                    />
+                    <button
+                      onClick={applyPromo}
+                      className="bg-[#3B1F0A] text-white px-5 py-3 text-sm font-semibold hover:bg-[#1A0D00] transition-colors shrink-0"
+                    >
+                      Apply
+                    </button>
+                  </div>
+                )}
+                {promoError && <p className="text-red-500 text-xs mt-1.5">{promoError}</p>}
               </div>
 
               {/* Payment */}

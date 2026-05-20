@@ -135,6 +135,15 @@ export default function Home() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
+  const [promoOpen, setPromoOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const copyPromoCode = () => {
+    navigator.clipboard.writeText("HIGHLANDS25").then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
 
   const parsePrice = (p: string) => parseInt(p.replace(/[₫,\s]/g, ""));
 
@@ -539,15 +548,18 @@ export default function Home() {
               className="text-3xl md:text-4xl font-bold text-white"
               style={{ fontFamily: "var(--font-playfair), serif" }}
             >
-              Buy 2, Get 1 Free
+              25% Off Your Order
             </p>
             <p className="text-white/75 text-sm mt-2 leading-relaxed">
-              On all iced drinks every weekday 2–5 pm. Dine-in only at participating stores.
+              Use code <strong className="text-white">HIGHLANDS25</strong> at checkout. Valid through 31 May 2026.
             </p>
           </div>
           <div className="flex flex-col sm:flex-row items-center gap-4 shrink-0">
-            <span className="text-white/65 text-sm hidden lg:block">Valid through 31 May 2026</span>
-            <button className="bg-white text-[#C8820A] font-bold px-8 py-3.5 text-sm tracking-wider hover:bg-[#3B1F0A] hover:text-white transition-all duration-200">
+            <span className="text-white/65 text-sm hidden lg:block">One use per customer</span>
+            <button
+              onClick={() => setPromoOpen(true)}
+              className="bg-white text-[#C8820A] font-bold px-8 py-3.5 text-sm tracking-wider hover:bg-[#3B1F0A] hover:text-white transition-all duration-200"
+            >
               Claim Offer
             </button>
           </div>
@@ -691,6 +703,78 @@ export default function Home() {
         onUpdate={updateCart}
         onClearCart={() => setCart([])}
       />
+
+      {/* ─── PROMO MODAL ─────────────────────────────────────── */}
+      {promoOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center px-4">
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setPromoOpen(false)}
+          />
+          <div className="relative bg-[#FAF6EF] w-full max-w-sm shadow-2xl overflow-hidden">
+            {/* Close */}
+            <button
+              onClick={() => setPromoOpen(false)}
+              className="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center text-white/60 hover:text-white transition-colors"
+            >
+              <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" />
+              </svg>
+            </button>
+
+            {/* Header */}
+            <div className="bg-[#C8820A] px-6 pt-6 pb-7 text-white">
+              <p className="text-[10px] font-semibold tracking-[0.35em] uppercase opacity-70 mb-1">
+                Limited Time Offer
+              </p>
+              <h3
+                className="text-2xl font-bold leading-tight"
+                style={{ fontFamily: "var(--font-playfair), serif" }}
+              >
+                25% Off Your Order
+              </h3>
+              <p className="text-white/70 text-sm mt-1.5">
+                Valid through 31 May 2026 · One use per customer
+              </p>
+            </div>
+
+            {/* Body */}
+            <div className="px-6 py-6">
+              <p className="text-sm text-[#3B1F0A]/60 mb-5">
+                Copy the code below and paste it in the <strong className="text-[#3B1F0A]">Promo Code</strong> field at checkout to get 25% off your subtotal.
+              </p>
+
+              {/* Promo code display */}
+              <div className="border-2 border-dashed border-[#C8820A]/40 bg-[#C8820A]/5 px-5 py-4 flex items-center justify-between mb-1">
+                <span
+                  className="text-2xl font-bold tracking-[0.15em] text-[#3B1F0A]"
+                  style={{ fontFamily: "var(--font-playfair), serif" }}
+                >
+                  HIGHLANDS25
+                </span>
+                <button
+                  onClick={copyPromoCode}
+                  className={`text-sm font-bold px-3 py-1.5 transition-all ${
+                    copied
+                      ? "text-green-600 bg-green-50"
+                      : "text-[#C8820A] hover:text-[#3B1F0A]"
+                  }`}
+                >
+                  {copied ? "Copied!" : "Copy"}
+                </button>
+              </div>
+              <p className="text-xs text-[#3B1F0A]/30 mb-6">Saves 25% on your order subtotal</p>
+
+              <button
+                onClick={() => { setPromoOpen(false); setCartOpen(true); }}
+                className="w-full bg-[#C8820A] text-white py-3.5 font-bold tracking-wider text-sm hover:bg-[#3B1F0A] transition-colors"
+              >
+                Order Now & Apply →
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ─── FOOTER ──────────────────────────────────────────── */}
       <footer className="bg-[#1A0D00] text-[#FAF6EF]/55 py-16 lg:py-20 px-6 lg:px-8">
