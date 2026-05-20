@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { saveOrder } from "@/lib/orders";
 
 export type CartItem = {
   name: string;
@@ -51,7 +52,18 @@ export default function CartDrawer({ cart, isOpen, onClose, onUpdate, onClearCar
     if (Object.keys(e).length) { setErrors(e); return; }
     setLoading(true);
     await new Promise((r) => setTimeout(r, 1200));
-    setOrderNum(`HC-${Math.floor(100000 + Math.random() * 900000)}`);
+    const num = `HC-${Math.floor(100000 + Math.random() * 900000)}`;
+    setOrderNum(num);
+    saveOrder({
+      id: num,
+      createdAt: new Date().toISOString(),
+      customer: { name: form.name, phone: form.phone, address: form.address, notes: form.notes },
+      items: cart.map((i) => ({ name: i.name, price: i.price, quantity: i.quantity, img: i.img })),
+      subtotal,
+      deliveryFee,
+      total,
+      status: "pending",
+    });
     setStep("success");
     setLoading(false);
   };
