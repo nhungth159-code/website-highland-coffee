@@ -837,9 +837,15 @@ export default function Home() {
                 <ul className="space-y-3">
                   {col.links.map((link) => (
                     <li key={link}>
-                      <a href="#" className="text-sm hover:text-[#C8820A] transition-colors duration-200">
-                        {link}
-                      </a>
+                      {link === "Careers" ? (
+                        <Link href="/careers" className="text-sm hover:text-[#C8820A] transition-colors duration-200">
+                          {link}
+                        </Link>
+                      ) : (
+                        <a href="#" className="text-sm hover:text-[#C8820A] transition-colors duration-200">
+                          {link}
+                        </a>
+                      )}
                     </li>
                   ))}
                 </ul>
