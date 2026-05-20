@@ -114,14 +114,21 @@ export default function AdminPage() {
               <path d="M19 12H5M12 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </Link>
-          <div>
+          <div className="flex items-center gap-4">
             <p
               className="text-lg font-bold tracking-widest"
               style={{ fontFamily: "var(--font-playfair), serif" }}
             >
               HIGHLANDS
             </p>
-            <p className="text-white/50 text-xs tracking-wide">Order Management</p>
+            <span className="text-white/20 text-lg">|</span>
+            <div className="flex items-center gap-3 text-sm">
+              <span className="text-white font-semibold">Orders</span>
+              <span className="text-white/20">/</span>
+              <Link href="/admin/applications" className="text-white/50 hover:text-white transition-colors">
+                Applications
+              </Link>
+            </div>
           </div>
         </div>
         <button

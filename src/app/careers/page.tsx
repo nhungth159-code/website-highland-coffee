@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { saveApplication } from "@/lib/applications";
 
 // ── Data ──────────────────────────────────────────────────────
 const PERKS = [
@@ -167,6 +168,18 @@ export default function CareersPage() {
     if (Object.keys(errs).length) { setErrors(errs); return; }
     setLoading(true);
     await new Promise((r) => setTimeout(r, 1200));
+    saveApplication({
+      id: `APP-${Math.floor(100000 + Math.random() * 900000)}`,
+      jobTitle: applyJob!.title,
+      dept: applyJob!.dept,
+      location: applyJob!.location,
+      name: form.name,
+      email: form.email,
+      phone: form.phone,
+      cover: form.cover,
+      appliedAt: new Date().toISOString(),
+      status: "new",
+    });
     setLoading(false);
     setSubmitted(true);
   };
