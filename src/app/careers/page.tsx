@@ -131,6 +131,15 @@ const DEPT_COLOR: Record<Dept, string> = {
 };
 
 // ── Page ──────────────────────────────────────────────────────
+const CV_MAX_BYTES = 5 * 1024 * 1024; // 5 MB
+const ACCEPTED = ".pdf,.doc,.docx";
+
+function fmtBytes(b: number) {
+  if (b < 1024) return `${b} B`;
+  if (b < 1024 * 1024) return `${(b / 1024).toFixed(0)} KB`;
+  return `${(b / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 export default function CareersPage() {
   const [activeTab, setActiveTab] = useState<Dept>("All");
   const [applyJob, setApplyJob] = useState<Job | null>(null);
@@ -138,6 +147,10 @@ export default function CareersPage() {
   const [errors, setErrors] = useState<Partial<typeof form>>({});
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [cvName, setCvName] = useState("");
+  const [cvData, setCvData] = useState("");
+  const [cvError, setCvError] = useState("");
+  const [dragOver, setDragOver] = useState(false);
 
   const filtered = activeTab === "All" ? JOBS : JOBS.filter((j) => j.dept === activeTab);
 
@@ -146,6 +159,28 @@ export default function CareersPage() {
     setForm({ name: "", email: "", phone: "", cover: "" });
     setErrors({});
     setSubmitted(false);
+    setCvName("");
+    setCvData("");
+    setCvError("");
+  };
+
+  const handleFile = (file: File) => {
+    setCvError("");
+    const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
+    if (!["pdf", "doc", "docx"].includes(ext)) {
+      setCvError("Only PDF, DOC, or DOCX files are accepted.");
+      return;
+    }
+    if (file.size > CV_MAX_BYTES) {
+      setCvError(`File is too large (${fmtBytes(file.size)}). Maximum is 5 MB.`);
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setCvData(reader.result as string);
+      setCvName(file.name);
+    };
+    reader.readAsDataURL(file);
   };
 
   const closeApply = () => {
@@ -177,6 +212,7 @@ export default function CareersPage() {
       email: form.email,
       phone: form.phone,
       cover: form.cover,
+      ...(cvName && cvData ? { cvName, cvData } : {}),
       appliedAt: new Date().toISOString(),
       status: "new",
     });
@@ -470,6 +506,69 @@ export default function CareersPage() {
                       rows={4}
                       className="w-full border border-[#3B1F0A]/15 px-4 py-3 text-sm text-[#3B1F0A] bg-white placeholder-[#3B1F0A]/25 outline-none focus:border-[#C8820A] resize-none transition-colors"
                     />
+                  </div>
+
+                  {/* CV upload */}
+                  <div>
+                    <label className="block text-sm font-medium text-[#3B1F0A] mb-1.5">
+                      Attach CV{" "}
+                      <span className="text-[#3B1F0A]/35 font-normal text-xs">(optional)</span>
+                    </label>
+
+                    {cvName ? (
+                      /* File selected */
+                      <div className="flex items-center gap-3 border border-green-200 bg-green-50 px-4 py-3">
+                        <svg width="18" height="18" fill="none" stroke="#16a34a" strokeWidth="1.8" viewBox="0 0 24 24">
+                          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" strokeLinecap="round" strokeLinejoin="round" />
+                          <path d="M14 2v6h6M9 13h6M9 17h4" strokeLinecap="round" />
+                        </svg>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-green-800 truncate">{cvName}</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => { setCvName(""); setCvData(""); setCvError(""); }}
+                          className="text-green-600 hover:text-red-500 transition-colors shrink-0"
+                          aria-label="Remove file"
+                        >
+                          <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                            <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" />
+                          </svg>
+                        </button>
+                      </div>
+                    ) : (
+                      /* Drop zone */
+                      <label
+                        className={`flex flex-col items-center justify-center border-2 border-dashed px-4 py-6 cursor-pointer transition-all ${
+                          dragOver
+                            ? "border-[#C8820A] bg-[#C8820A]/5"
+                            : "border-[#3B1F0A]/15 hover:border-[#C8820A]/40 hover:bg-[#C8820A]/3"
+                        }`}
+                        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                        onDragLeave={() => setDragOver(false)}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          setDragOver(false);
+                          const file = e.dataTransfer.files[0];
+                          if (file) handleFile(file);
+                        }}
+                      >
+                        <svg width="22" height="22" fill="none" stroke="#C8820A" strokeWidth="1.5" viewBox="0 0 24 24" className="mb-2 opacity-70">
+                          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        <p className="text-sm text-[#3B1F0A]/60">
+                          <span className="font-semibold text-[#C8820A]">Click to upload</span> or drag & drop
+                        </p>
+                        <p className="text-xs text-[#3B1F0A]/35 mt-1">PDF, DOC, DOCX · Max 5 MB</p>
+                        <input
+                          type="file"
+                          accept={ACCEPTED}
+                          className="hidden"
+                          onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
+                        />
+                      </label>
+                    )}
+                    {cvError && <p className="text-red-500 text-xs mt-1.5">{cvError}</p>}
                   </div>
 
                   <p className="text-xs text-[#3B1F0A]/35">

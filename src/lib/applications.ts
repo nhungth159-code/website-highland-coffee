@@ -14,6 +14,8 @@ export interface Application {
   email: string;
   phone: string;
   cover: string;
+  cvName?: string;
+  cvData?: string;
   appliedAt: string;
   status: ApplicationStatus;
 }

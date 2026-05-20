@@ -304,6 +304,21 @@ export default function ApplicationsAdminPage() {
                             <p className="text-sm text-[#3B1F0A]">{app.email}</p>
                             <p className="text-sm text-[#3B1F0A]">{app.phone}</p>
                           </div>
+                          {app.cvName && app.cvData && (
+                            <div>
+                              <p className="text-[10px] font-semibold text-[#3B1F0A]/35 tracking-widest uppercase mb-1">CV / Resume</p>
+                              <a
+                                href={app.cvData}
+                                download={app.cvName}
+                                className="inline-flex items-center gap-2 bg-[#3B1F0A] text-white text-xs font-semibold px-4 py-2 hover:bg-[#C8820A] transition-colors"
+                              >
+                                <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                                {app.cvName}
+                              </a>
+                            </div>
+                          )}
                           {app.cover && (
                             <div>
                               <p className="text-[10px] font-semibold text-[#3B1F0A]/35 tracking-widest uppercase mb-1">Cover Note</p>
