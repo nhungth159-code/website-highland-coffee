@@ -2,6 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
+
+const IMG = "https://images.unsplash.com/photo-";
+const q = "?auto=format&fit=crop&w=400&q=80";
 
 const MENU = {
   Coffee: [
@@ -9,21 +13,25 @@ const MENU = {
       name: "Cà Phê Sữa Đá",
       desc: "Vietnam's iconic iced coffee — rich Robusta with velvety condensed milk over hand-chipped ice.",
       price: "35,000₫",
+      img: `${IMG}jODz47eM1w8${q}`,
     },
     {
       name: "Bạc Xỉu",
       desc: "Mild espresso with a generous pour of sweetened milk — light, smooth, and endlessly comforting.",
       price: "35,000₫",
+      img: `${IMG}hJJAyrscf_A${q}`,
     },
     {
       name: "Highlands Espresso",
       desc: "Double-shot espresso from single-origin Arabica grown at 1,500m in Cầu Đất, Đà Lạt.",
       price: "45,000₫",
+      img: `${IMG}BnrKDRn5sjg${q}`,
     },
     {
       name: "Cold Brew",
       desc: "18-hour cold-steeped highland beans — silky, low-acid, with a naturally sweet finish.",
       price: "55,000₫",
+      img: `${IMG}8yxIau08-58${q}`,
     },
   ],
   Tea: [
@@ -31,21 +39,25 @@ const MENU = {
       name: "Trà Đào Cam Sả",
       desc: "Sun-ripened peaches, fresh orange slices, and fragrant lemongrass in a golden iced tea.",
       price: "45,000₫",
+      img: `${IMG}FnTWsBohkdo${q}`,
     },
     {
       name: "Trà Xanh Sữa",
       desc: "Matcha milk tea with hand-blended Da Lat green tea and a hint of toasted rice.",
       price: "50,000₫",
+      img: `${IMG}rW_EmeV7dEU${q}`,
     },
     {
       name: "Hồng Trà Sữa",
       desc: "Black milk tea with creamy foam topping — warm, bold, and perfectly sweet.",
       price: "55,000₫",
+      img: `${IMG}dXRRaiF_b_U${q}`,
     },
     {
       name: "Trà Tắc Tươi",
       desc: "Fresh-squeezed kumquat with premium jasmine tea — bright, tangy, and refreshing.",
       price: "40,000₫",
+      img: `${IMG}hyDjDI9d6wQ${q}`,
     },
   ],
   Food: [
@@ -53,21 +65,25 @@ const MENU = {
       name: "Bánh Mì Bơ",
       desc: "Toasted Vietnamese baguette with cultured butter and fleur de sel — a simple morning ritual.",
       price: "25,000₫",
+      img: `${IMG}wRU27yGfSLQ${q}`,
     },
     {
       name: "Croissant Hạnh Nhân",
       desc: "Flaky almond croissant baked fresh each morning, filled with house-made frangipane.",
       price: "45,000₫",
+      img: `${IMG}ZV1acMlN9T0${q}`,
     },
     {
       name: "Bánh Phô Mai Matcha",
       desc: "Green tea cheesecake on a toasted sesame crust — soft, fragrant, and lightly bitter.",
       price: "55,000₫",
+      img: `${IMG}LGNxQzYmeUk${q}`,
     },
     {
       name: "Tiramisu Cà Phê",
       desc: "House tiramisu soaked in Highland Cold Brew, dusted with premium Vietnamese cacao.",
       price: "60,000₫",
+      img: `${IMG}BfJk5g7JCz4${q}`,
     },
   ],
 } as const;
@@ -86,27 +102,21 @@ const FEATURED = [
     desc: "Vietnam's iconic iced coffee — rich Robusta with velvety condensed milk over hand-chipped ice.",
     price: "35,000₫",
     tag: "Classic",
-    from: "#C8820A",
-    via: "#8B4513",
-    to: "#3B1F0A",
+    img: `${IMG}jODz47eM1w8?auto=format&fit=crop&w=800&q=80`,
   },
   {
     name: "Trà Đào Cam Sả",
     desc: "Sun-ripened peaches, orange slices, and fragrant lemongrass in a golden iced tea.",
     price: "45,000₫",
     tag: "Bestseller",
-    from: "#F97316",
-    via: "#FDBA74",
-    to: "#FEF3C7",
+    img: `${IMG}FnTWsBohkdo?auto=format&fit=crop&w=800&q=80`,
   },
   {
     name: "Highland Cold Brew",
     desc: "Single-origin Arabica from Cầu Đất farm, cold-steeped 18 hours for unmatched silky depth.",
     price: "55,000₫",
     tag: "Premium",
-    from: "#1A0D00",
-    via: "#3B1F0A",
-    to: "#2D5016",
+    img: `${IMG}8yxIau08-58?auto=format&fit=crop&w=800&q=80`,
   },
 ];
 
@@ -300,20 +310,20 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-10">
             {FEATURED.map((drink) => (
               <div key={drink.name} className="group cursor-pointer">
-                <div
-                  className="h-72 relative overflow-hidden mb-6"
-                  style={{
-                    background: `linear-gradient(135deg, ${drink.from}, ${drink.via}, ${drink.to})`,
-                  }}
-                >
-                  <span className="absolute top-4 left-4 bg-white/15 backdrop-blur-sm text-white text-[11px] font-bold tracking-[0.2em] uppercase px-3 py-1.5">
+                <div className="h-72 relative overflow-hidden mb-6">
+                  <Image
+                    src={drink.img}
+                    alt={drink.name}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                  <span className="absolute top-4 left-4 bg-black/30 backdrop-blur-sm text-white text-[11px] font-bold tracking-[0.2em] uppercase px-3 py-1.5">
                     {drink.tag}
                   </span>
-                  <div className="absolute -bottom-10 -right-10 w-48 h-48 rounded-full bg-white/5" />
-                  <div className="absolute -bottom-4 -right-4 w-28 h-28 rounded-full bg-white/6" />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/8 transition-colors duration-300" />
                   <div className="absolute bottom-5 right-5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="w-10 h-10 bg-white/15 backdrop-blur-sm flex items-center justify-center">
+                    <div className="w-10 h-10 bg-white/20 backdrop-blur-sm flex items-center justify-center">
                       <svg width="16" height="16" fill="none" stroke="white" strokeWidth="2" viewBox="0 0 24 24">
                         <path d="M12 5v14M5 12h14" strokeLinecap="round" />
                       </svg>
@@ -502,20 +512,29 @@ export default function Home() {
             {MENU[activeTab].map((item, i) => (
               <div
                 key={i}
-                className="bg-[#FAF6EF] p-7 lg:p-9 flex items-start justify-between gap-6 hover:bg-white transition-colors duration-200 group"
+                className="bg-[#FAF6EF] p-6 lg:p-8 flex items-center gap-5 hover:bg-white transition-colors duration-200 group"
               >
+                <div className="relative w-16 h-16 shrink-0 overflow-hidden">
+                  <Image
+                    src={item.img}
+                    alt={item.name}
+                    fill
+                    className="object-cover"
+                    sizes="64px"
+                  />
+                </div>
                 <div className="flex-1 min-w-0">
                   <h4
-                    className="text-lg font-bold text-[#3B1F0A] mb-2"
+                    className="text-lg font-bold text-[#3B1F0A] mb-1"
                     style={{ fontFamily: "var(--font-playfair), serif" }}
                   >
                     {item.name}
                   </h4>
                   <p className="text-[#3B1F0A]/50 text-sm leading-relaxed">{item.desc}</p>
                 </div>
-                <div className="shrink-0 text-right pt-0.5">
+                <div className="shrink-0 text-right">
                   <div className="text-[#C8820A] font-bold text-sm whitespace-nowrap">{item.price}</div>
-                  <button className="mt-2.5 text-xs text-[#3B1F0A]/40 hover:text-[#C8820A] font-semibold tracking-wide opacity-0 group-hover:opacity-100 transition-all duration-200">
+                  <button className="mt-2 text-xs text-[#3B1F0A]/40 hover:text-[#C8820A] font-semibold tracking-wide opacity-0 group-hover:opacity-100 transition-all duration-200">
                     Add +
                   </button>
                 </div>
