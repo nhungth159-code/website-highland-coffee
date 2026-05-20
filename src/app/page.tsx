@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import CartDrawer, { type CartItem } from "@/components/CartDrawer";
 
 const U = "https://images.unsplash.com/photo-";
 const P = "https://plus.unsplash.com/premium_photo-";
@@ -132,6 +133,29 @@ const FOOTER_COLS = [
 export default function Home() {
   const [activeTab, setActiveTab] = useState<MenuTab>("Coffee");
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [cartOpen, setCartOpen] = useState(false);
+
+  const parsePrice = (p: string) => parseInt(p.replace(/[₫,\s]/g, ""));
+
+  const addToCart = (name: string, price: string, img: string) => {
+    const numPrice = parsePrice(price);
+    setCart((prev) => {
+      const existing = prev.find((i) => i.name === name);
+      if (existing) return prev.map((i) => i.name === name ? { ...i, quantity: i.quantity + 1 } : i);
+      return [...prev, { name, price: numPrice, img, quantity: 1 }];
+    });
+    setCartOpen(true);
+  };
+
+  const updateCart = (name: string, delta: number) => {
+    setCart((prev) =>
+      prev.map((i) => i.name === name ? { ...i, quantity: i.quantity + delta } : i)
+         .filter((i) => i.quantity > 0)
+    );
+  };
+
+  const cartCount = cart.reduce((s, i) => s + i.quantity, 0);
 
   return (
     <div
@@ -161,17 +185,49 @@ export default function Home() {
             ))}
           </div>
 
-          <div className="hidden md:flex items-center gap-4">
-            <button className="bg-[#C8820A] text-white text-sm font-semibold tracking-wider px-6 py-2.5 hover:bg-[#3B1F0A] transition-colors duration-200">
+          <div className="hidden md:flex items-center gap-3">
+            <button
+              onClick={() => setCartOpen(true)}
+              className="relative p-2 text-[#3B1F0A]/60 hover:text-[#3B1F0A] transition-colors"
+              aria-label="Open cart"
+            >
+              <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+                <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              {cartCount > 0 && (
+                <span className="absolute top-0.5 right-0.5 w-4 h-4 bg-[#C8820A] text-white text-[10px] font-bold flex items-center justify-center rounded-full">
+                  {cartCount > 9 ? "9+" : cartCount}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => setCartOpen(true)}
+              className="bg-[#C8820A] text-white text-sm font-semibold tracking-wider px-6 py-2.5 hover:bg-[#3B1F0A] transition-colors duration-200"
+            >
               Order Now
             </button>
           </div>
 
-          <button
-            className="md:hidden text-[#3B1F0A] p-1"
-            onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label="Toggle menu"
-          >
+          <div className="md:hidden flex items-center gap-1">
+            <button
+              onClick={() => setCartOpen(true)}
+              className="relative p-1.5 text-[#3B1F0A]/60 hover:text-[#3B1F0A] transition-colors"
+              aria-label="Open cart"
+            >
+              <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+                <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              {cartCount > 0 && (
+                <span className="absolute top-0.5 right-0.5 w-3.5 h-3.5 bg-[#C8820A] text-white text-[9px] font-bold flex items-center justify-center rounded-full">
+                  {cartCount > 9 ? "9+" : cartCount}
+                </span>
+              )}
+            </button>
+            <button
+              className="text-[#3B1F0A] p-1"
+              onClick={() => setMobileOpen(!mobileOpen)}
+              aria-label="Toggle menu"
+            >
             <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               {mobileOpen ? (
                 <path d="M6 18L18 6M6 6l12 12" strokeLinecap="round" />
@@ -180,6 +236,7 @@ export default function Home() {
               )}
             </svg>
           </button>
+          </div>
         </div>
 
         {mobileOpen && (
@@ -323,13 +380,16 @@ export default function Home() {
                   <span className="absolute top-4 left-4 bg-black/30 backdrop-blur-sm text-white text-[11px] font-bold tracking-[0.2em] uppercase px-3 py-1.5">
                     {drink.tag}
                   </span>
-                  <div className="absolute bottom-5 right-5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="w-10 h-10 bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                  <button
+                    onClick={() => addToCart(drink.name, drink.price, drink.img)}
+                    className="absolute bottom-5 right-5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  >
+                    <div className="w-10 h-10 bg-white/20 backdrop-blur-sm hover:bg-white/40 flex items-center justify-center transition-colors">
                       <svg width="16" height="16" fill="none" stroke="white" strokeWidth="2" viewBox="0 0 24 24">
                         <path d="M12 5v14M5 12h14" strokeLinecap="round" />
                       </svg>
                     </div>
-                  </div>
+                  </button>
                 </div>
                 <div className="flex items-start justify-between gap-4">
                   <div>
@@ -535,7 +595,10 @@ export default function Home() {
                 </div>
                 <div className="shrink-0 text-right">
                   <div className="text-[#C8820A] font-bold text-sm whitespace-nowrap">{item.price}</div>
-                  <button className="mt-2 text-xs text-[#3B1F0A]/40 hover:text-[#C8820A] font-semibold tracking-wide opacity-0 group-hover:opacity-100 transition-all duration-200">
+                  <button
+                    onClick={() => addToCart(item.name, item.price, item.img)}
+                    className="mt-2 text-xs text-[#3B1F0A]/40 hover:text-[#C8820A] font-semibold tracking-wide opacity-0 group-hover:opacity-100 transition-all duration-200"
+                  >
                     Add +
                   </button>
                 </div>
@@ -600,6 +663,14 @@ export default function Home() {
           </a>
         </div>
       </section>
+
+      <CartDrawer
+        cart={cart}
+        isOpen={cartOpen}
+        onClose={() => setCartOpen(false)}
+        onUpdate={updateCart}
+        onClearCart={() => setCart([])}
+      />
 
       {/* ─── FOOTER ──────────────────────────────────────────── */}
       <footer className="bg-[#1A0D00] text-[#FAF6EF]/55 py-16 lg:py-20 px-6 lg:px-8">
