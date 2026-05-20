@@ -200,6 +200,16 @@ export default function Home() {
                 </span>
               )}
             </button>
+            <Link
+              href="/track"
+              className="flex items-center gap-1.5 text-sm font-medium text-[#3B1F0A]/60 hover:text-[#C8820A] transition-colors"
+            >
+              <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 6v6l4 2" strokeLinecap="round" />
+              </svg>
+              My Orders
+            </Link>
             <button
               onClick={() => setCartOpen(true)}
               className="bg-[#C8820A] text-white text-sm font-semibold tracking-wider px-6 py-2.5 hover:bg-[#3B1F0A] transition-colors duration-200"
@@ -223,6 +233,16 @@ export default function Home() {
                 </span>
               )}
             </button>
+            <Link
+              href="/track"
+              className="p-1.5 text-[#3B1F0A]/60 hover:text-[#C8820A] transition-colors"
+              aria-label="My Orders"
+            >
+              <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 6v6l4 2" strokeLinecap="round" />
+              </svg>
+            </Link>
             <button
               className="text-[#3B1F0A] p-1"
               onClick={() => setMobileOpen(!mobileOpen)}
