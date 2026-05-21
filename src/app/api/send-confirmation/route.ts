@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
     await transporter.sendMail({
       from: `"Highlands Coffee Careers" <${GMAIL_USER}>`,
       to: email,
-      subject: "We received your application — Highlands Coffee",
+      subject: `Application Received · [${appId}] — Highlands Coffee`,
       html: buildEmail(name, jobTitle, appId),
     });
     return NextResponse.json({ success: true });

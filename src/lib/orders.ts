@@ -25,6 +25,7 @@ export interface StoredOrder {
   discount?: number;
   total: number;
   status: OrderStatus;
+  paymentMethod?: string;
 }
 
 const KEY = "highlands_orders";

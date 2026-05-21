@@ -309,7 +309,7 @@ export default function TrackOrderPage({
               className="flex justify-between font-bold text-[#3B1F0A] pt-2 border-t border-[#3B1F0A]/8"
               style={{ fontFamily: "var(--font-playfair), serif" }}
             >
-              <span>Total (COD)</span>
+              <span>Total ({order.paymentMethod ?? "COD"})</span>
               <span>{fmt(order.total)}</span>
             </div>
           </div>

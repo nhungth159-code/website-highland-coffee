@@ -1,13 +1,17 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import Link from "next/link";
 import {
   getApplications,
   updateApplicationStatus,
+  addApplicationReply,
+  addInboundApplicationReplies,
+  markApplicationRepliesSeen,
   deleteApplication,
 } from "@/lib/applications";
-import type { Application, ApplicationStatus } from "@/lib/applications";
+import type { Application, ApplicationStatus, AppReplyLog } from "@/lib/applications";
+import type { InboundReply } from "@/app/api/fetch-replies/route";
 
 // ── Config ────────────────────────────────────────────────────
 const STATUS_CONFIG: Record<
@@ -38,6 +42,16 @@ const DEPT_COLOR: Record<string, string> = {
 type FilterTab = "All" | ApplicationStatus;
 const TABS: FilterTab[] = ["All", "new", "reviewing", "interviewed", "hired", "rejected"];
 
+type AppReplySendState = "idle" | "sending" | "success" | "error";
+
+interface AppReplyDraft {
+  app: Application;
+  body: string;
+  agentName: string;
+  sendState: AppReplySendState;
+  errorMsg: string;
+}
+
 function timeAgo(iso: string) {
   const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
   if (diff < 60) return "just now";
@@ -53,6 +67,10 @@ export default function ApplicationsAdminPage() {
   const [search, setSearch] = useState("");
   const [expanded, setExpanded] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [replyDraft, setReplyDraft] = useState<AppReplyDraft | null>(null);
+  const [checkingReplies, setCheckingReplies] = useState(false);
+  const [checkResult, setCheckResult] = useState<string | null>(null);
+  const lastPolledRef = useRef<number>(0);
 
   const load = () => setApps(getApplications());
 
@@ -62,6 +80,41 @@ export default function ApplicationsAdminPage() {
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
   }, []);
+
+  // Total unseen inbound replies across all applications
+  const unseenCount = useMemo(
+    () => apps.flatMap((a) => a.replies ?? []).filter((r) => r.type === "inbound" && !r.seen).length,
+    [apps]
+  );
+
+  const silentPoll = useCallback(async () => {
+    if (Date.now() - lastPolledRef.current < 50_000) return;
+    lastPolledRef.current = Date.now();
+    try {
+      const res = await fetch("/api/fetch-replies");
+      const data: { replies?: InboundReply[]; skipped?: boolean } = await res.json();
+      if (data.skipped || !data.replies) return;
+      const appReplies = data.replies.filter((r) => r.recordType === "application");
+      if (appReplies.length === 0) return;
+      const { apps: updated, added } = addInboundApplicationReplies(
+        appReplies.map((r) => ({
+          appId: r.recordId,
+          fromEmail: r.fromEmail,
+          body: r.body,
+          receivedAt: r.receivedAt,
+          emailMessageId: r.emailMessageId,
+        }))
+      );
+      if (added > 0) setApps(updated);
+    } catch { /* silent */ }
+  }, []);
+
+  useEffect(() => {
+    const t = setTimeout(() => silentPoll(), 6_000);
+    const iv = setInterval(() => silentPoll(), 60_000);
+    window.addEventListener("focus", silentPoll);
+    return () => { clearTimeout(t); clearInterval(iv); window.removeEventListener("focus", silentPoll); };
+  }, [silentPoll]);
 
   const stats = useMemo(() => ({
     total:       apps.length,
@@ -86,18 +139,111 @@ export default function ApplicationsAdminPage() {
     return list;
   }, [apps, filter, search]);
 
+  const fireStatusEmail = (app: Application, status: ApplicationStatus) => {
+    fetch("/api/application-status", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: app.name,
+        email: app.email,
+        jobTitle: app.jobTitle,
+        appId: app.id,
+        status,
+      }),
+    }).catch(() => {});
+  };
+
   const advance = (id: string, next: ApplicationStatus) => {
+    const app = apps.find((a) => a.id === id);
     setApps(updateApplicationStatus(id, next));
+    if (app) fireStatusEmail(app, next);
   };
 
   const reject = (id: string) => {
+    const app = apps.find((a) => a.id === id);
     setApps(updateApplicationStatus(id, "rejected"));
+    if (app) fireStatusEmail(app, "rejected");
   };
 
   const handleDelete = (id: string) => {
     setApps(deleteApplication(id));
     setConfirmDelete(null);
     if (expanded === id) setExpanded(null);
+  };
+
+  const openReply = (app: Application) => {
+    setReplyDraft({
+      app,
+      body: `Hi ${app.name},\n\nThank you for applying for the ${app.jobTitle} position at Highlands Coffee.\n\n`,
+      agentName: "Highlands Coffee Team",
+      sendState: "idle",
+      errorMsg: "",
+    });
+  };
+
+  const sendReply = async () => {
+    if (!replyDraft) return;
+    if (!replyDraft.body.trim()) return;
+    setReplyDraft((d) => d && { ...d, sendState: "sending", errorMsg: "" });
+    try {
+      const res = await fetch("/api/reply-application", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          toName: replyDraft.app.name,
+          toEmail: replyDraft.app.email,
+          body: replyDraft.body,
+          jobTitle: replyDraft.app.jobTitle,
+          appId: replyDraft.app.id,
+          agentName: replyDraft.agentName,
+        }),
+      });
+      const data = await res.json();
+      if (data.success || data.skipped) {
+        setReplyDraft((d) => d && { ...d, sendState: "success" });
+        const outbound: AppReplyLog = {
+          sentAt: new Date().toISOString(),
+          body: replyDraft.body,
+          type: "outbound",
+          agentName: replyDraft.agentName || "Highlands Coffee Team",
+        };
+        setApps(addApplicationReply(replyDraft.app.id, outbound));
+      } else {
+        throw new Error(data.error || "Send failed");
+      }
+    } catch (err) {
+      setReplyDraft((d) => d && { ...d, sendState: "error", errorMsg: String(err) });
+    }
+  };
+
+  const checkForReplies = async () => {
+    setCheckingReplies(true);
+    setCheckResult(null);
+    lastPolledRef.current = 0; // bypass debounce for manual check
+    try {
+      const res = await fetch("/api/fetch-replies");
+      const data: { replies?: InboundReply[]; skipped?: boolean; error?: string } = await res.json();
+      if (data.skipped) { setCheckResult("Email not configured."); return; }
+      if (data.error) { setCheckResult(`Error: ${data.error}`); return; }
+      lastPolledRef.current = Date.now();
+      const appReplies = (data.replies ?? []).filter((r) => r.recordType === "application");
+      const { apps: updated, added } = addInboundApplicationReplies(
+        appReplies.map((r) => ({
+          appId: r.recordId,
+          fromEmail: r.fromEmail,
+          body: r.body,
+          receivedAt: r.receivedAt,
+          emailMessageId: r.emailMessageId,
+        }))
+      );
+      setApps(updated);
+      setCheckResult(added > 0 ? `${added} new reply${added > 1 ? "s" : ""} added.` : "All caught up.");
+    } catch (err) {
+      setCheckResult(`Failed: ${String(err)}`);
+    } finally {
+      setCheckingReplies(false);
+      setTimeout(() => setCheckResult(null), 3_500);
+    }
   };
 
   return (
@@ -122,11 +268,49 @@ export default function ApplicationsAdminPage() {
             </Link>
             <span className="text-white/20">/</span>
             <span className="text-white font-semibold">Applications</span>
+            <span className="text-white/20">/</span>
+            <Link href="/admin/contacts" className="text-white/50 hover:text-white transition-colors">
+              Contacts
+            </Link>
+            <span className="text-white/20">/</span>
+            <Link href="/admin/gift-cards" className="text-white/50 hover:text-white transition-colors">
+              Gift Cards
+            </Link>
           </div>
         </div>
-        <Link href="/careers" className="text-white/50 hover:text-white text-sm transition-colors">
-          View Careers Page →
-        </Link>
+        <div className="flex items-center gap-3">
+          {checkResult && (
+            <span className={`text-xs px-2.5 py-1 ${checkResult.startsWith("Error") || checkResult.startsWith("Failed") ? "bg-red-900/50 text-red-300" : checkResult.includes("new repl") ? "bg-[#2D5016]/60 text-green-300" : "bg-white/10 text-white/60"}`}>
+              {checkResult}
+            </span>
+          )}
+          <button
+            onClick={checkForReplies}
+            disabled={checkingReplies}
+            className="flex items-center gap-2 text-white/60 hover:text-white text-xs font-medium transition-colors disabled:opacity-50"
+          >
+            {checkingReplies ? (
+              <svg className="animate-spin" width="13" height="13" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+              </svg>
+            ) : (
+              <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                <polyline points="22,6 12,13 2,6" />
+              </svg>
+            )}
+            {checkingReplies ? "Checking…" : "Replies"}
+            {!checkingReplies && unseenCount > 0 && (
+              <span className="inline-flex items-center justify-center bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] px-1 leading-none animate-pulse">
+                {unseenCount > 99 ? "99+" : unseenCount}
+              </span>
+            )}
+          </button>
+          <Link href="/careers" className="text-white/50 hover:text-white text-sm transition-colors">
+            View Careers Page →
+          </Link>
+        </div>
       </header>
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 space-y-6">
@@ -224,7 +408,14 @@ export default function ApplicationsAdminPage() {
                   {/* Card header */}
                   <div
                     className="flex items-center gap-4 px-5 py-4 cursor-pointer hover:bg-[#3B1F0A]/2 transition-colors"
-                    onClick={() => setExpanded(isExpanded ? null : app.id)}
+                    onClick={() => {
+                      const next = isExpanded ? null : app.id;
+                      setExpanded(next);
+                      if (next) {
+                        const hasUnseen = app.replies?.some((r) => r.type === "inbound" && !r.seen);
+                        if (hasUnseen) setApps(markApplicationRepliesSeen(next));
+                      }
+                    }}
                   >
                     {/* Avatar initials */}
                     <div className="w-10 h-10 rounded-full bg-[#C8820A]/12 text-[#C8820A] font-bold text-sm flex items-center justify-center shrink-0">
@@ -241,6 +432,15 @@ export default function ApplicationsAdminPage() {
                           <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
                           {cfg.label}
                         </span>
+                        {(() => {
+                          const n = (app.replies ?? []).filter((r) => r.type === "inbound" && !r.seen).length;
+                          return n > 0 ? (
+                            <span className="inline-flex items-center gap-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                              <span className="w-1.5 h-1.5 rounded-full bg-white/80 animate-pulse" />
+                              {n} new
+                            </span>
+                          ) : null;
+                        })()}
                       </div>
                       <p className="text-xs text-[#3B1F0A]/50 mt-0.5">
                         {app.jobTitle} · {timeAgo(app.appliedAt)}
@@ -381,6 +581,65 @@ export default function ApplicationsAdminPage() {
                         )}
                       </div>
 
+                      {/* ── Conversation Thread ── */}
+                      {app.replies && app.replies.length > 0 && (
+                        <div className="mb-4">
+                          <p className="text-[10px] font-semibold text-[#3B1F0A]/35 tracking-widest uppercase mb-2">
+                            Conversation Thread
+                            <span className="ml-2 bg-[#C8820A]/15 text-[#C8820A] text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                              {app.replies.length}
+                            </span>
+                          </p>
+                          <div className="space-y-2">
+                            {app.replies.map((r, i) => {
+                              const isInbound = r.type === "inbound";
+                              return (
+                                <div key={i} className={`border ${isInbound ? "border-blue-200 bg-blue-50/60" : "border-[#3B1F0A]/8 bg-white"}`}>
+                                  <div className={`flex items-center justify-between gap-3 px-4 py-2 border-b ${isInbound ? "bg-blue-100/50 border-blue-200/70" : "bg-[#3B1F0A]/3 border-[#3B1F0A]/6"}`}>
+                                    <div className="flex items-center gap-2">
+                                      <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${isInbound ? "bg-blue-500" : "bg-[#C8820A]"}`}>
+                                        {isInbound ? (
+                                          <svg width="9" height="9" fill="none" stroke="white" strokeWidth="2" viewBox="0 0 24 24">
+                                            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 3a4 4 0 100 8 4 4 0 000-8z" strokeLinecap="round" strokeLinejoin="round" />
+                                          </svg>
+                                        ) : (
+                                          <svg width="9" height="9" fill="none" stroke="white" strokeWidth="2" viewBox="0 0 24 24">
+                                            <line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" />
+                                          </svg>
+                                        )}
+                                      </div>
+                                      <span className={`text-xs font-semibold ${isInbound ? "text-blue-700" : "text-[#3B1F0A]"}`}>
+                                        {isInbound ? `${app.name} ← replied` : `${r.agentName ?? "Team"} → ${app.email}`}
+                                      </span>
+                                    </div>
+                                    <span className="text-[#3B1F0A]/30 text-[11px] shrink-0">
+                                      {new Date(r.sentAt).toLocaleString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                                    </span>
+                                  </div>
+                                  <div className="px-4 py-2.5">
+                                    <p className={`text-sm leading-relaxed whitespace-pre-wrap ${isInbound ? "text-blue-900/70" : "text-[#3B1F0A]/60"}`}>{r.body}</p>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Message Applicant button */}
+                      <div className="mb-4">
+                        <button
+                          onClick={() => openReply(app)}
+                          className="flex items-center gap-1.5 border border-[#3B1F0A]/15 text-[#3B1F0A]/55 text-xs font-semibold px-4 py-2 hover:border-[#C8820A] hover:text-[#C8820A] transition-all"
+                        >
+                          <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                            <polyline points="22,6 12,13 2,6" />
+                          </svg>
+                          Message Applicant
+                        </button>
+                      </div>
+
                       {/* Delete */}
                       {confirmDelete === app.id ? (
                         <div className="flex items-center gap-3">
@@ -408,6 +667,109 @@ export default function ApplicationsAdminPage() {
           </div>
         )}
       </div>
+
+      {/* ── Reply Composer Modal ── */}
+      {replyDraft && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6">
+          <div
+            className="absolute inset-0 bg-[#1A0D00]/70 backdrop-blur-sm"
+            onClick={() => replyDraft.sendState !== "sending" && setReplyDraft(null)}
+          />
+          <div className="relative w-full sm:max-w-2xl bg-white flex flex-col shadow-2xl max-h-[90vh] overflow-hidden">
+
+            <div className="bg-[#3B1F0A] px-6 py-4 flex items-start justify-between shrink-0">
+              <div>
+                <p className="text-[#C8820A] text-[10px] font-semibold tracking-widest uppercase mb-1">Message Applicant</p>
+                <p className="text-white font-semibold text-sm">
+                  To: <span className="text-white/70">{replyDraft.app.name}</span>
+                  <span className="text-white/35 ml-2 font-normal">&lt;{replyDraft.app.email}&gt;</span>
+                </p>
+                <p className="text-white/40 text-xs mt-0.5">{replyDraft.app.jobTitle}</p>
+              </div>
+              {replyDraft.sendState !== "sending" && (
+                <button onClick={() => setReplyDraft(null)} className="text-white/40 hover:text-white transition-colors mt-0.5">
+                  <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" />
+                  </svg>
+                </button>
+              )}
+            </div>
+
+            {replyDraft.sendState === "success" ? (
+              <div className="flex flex-col items-center justify-center text-center py-14 px-8 flex-1">
+                <div className="w-14 h-14 bg-[#2D5016]/10 flex items-center justify-center mb-5">
+                  <svg width="28" height="28" fill="none" stroke="#2D5016" strokeWidth="2" viewBox="0 0 24 24">
+                    <polyline points="20 6 9 17 4 12" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+                <h3 className="font-bold text-[#3B1F0A] text-xl mb-2" style={{ fontFamily: "var(--font-playfair), serif" }}>Message Sent!</h3>
+                <p className="text-[#C8820A] font-semibold text-sm mb-7">{replyDraft.app.email}</p>
+                <button onClick={() => setReplyDraft(null)} className="bg-[#3B1F0A] text-white text-sm font-semibold px-6 py-2.5 hover:bg-[#C8820A] transition-colors">
+                  Close
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-col overflow-y-auto flex-1">
+                <div className="px-6 py-5 space-y-4 flex-1">
+                  <div>
+                    <label className="block text-[10px] font-semibold text-[#3B1F0A]/40 uppercase tracking-wider mb-1.5">Sent by (your name / team)</label>
+                    <input
+                      type="text"
+                      value={replyDraft.agentName}
+                      onChange={(e) => setReplyDraft((d) => d && { ...d, agentName: e.target.value })}
+                      placeholder="e.g. Lan Phương — Talent Team"
+                      className="w-full border border-[#3B1F0A]/12 px-4 py-2.5 text-sm text-[#3B1F0A] placeholder-[#3B1F0A]/30 focus:outline-none focus:border-[#C8820A] transition-colors"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <label className="block text-[10px] font-semibold text-[#3B1F0A]/40 uppercase tracking-wider mb-1.5">Message</label>
+                    <textarea
+                      rows={10}
+                      value={replyDraft.body}
+                      onChange={(e) => setReplyDraft((d) => d && { ...d, body: e.target.value })}
+                      placeholder="Write your message…"
+                      className="w-full border border-[#3B1F0A]/12 px-4 py-3 text-sm text-[#3B1F0A] placeholder-[#3B1F0A]/30 focus:outline-none focus:border-[#C8820A] transition-colors resize-none leading-relaxed"
+                    />
+                  </div>
+                  {replyDraft.sendState === "error" && (
+                    <p className="text-xs text-red-500 bg-red-50 px-3 py-2 border border-red-100">{replyDraft.errorMsg || "Failed to send."}</p>
+                  )}
+                </div>
+                <div className="border-t border-[#3B1F0A]/8 px-6 py-4 flex items-center justify-between gap-3 shrink-0 bg-white">
+                  <p className="text-[#3B1F0A]/35 text-xs">Email will include application reference [{replyDraft.app.id}].</p>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button onClick={() => setReplyDraft(null)} className="text-sm text-[#3B1F0A]/45 hover:text-[#3B1F0A] px-4 py-2 border border-[#3B1F0A]/12 hover:border-[#3B1F0A]/30 transition-all">
+                      Discard
+                    </button>
+                    <button
+                      onClick={sendReply}
+                      disabled={replyDraft.sendState === "sending" || !replyDraft.body.trim()}
+                      className="flex items-center gap-2 bg-[#3B1F0A] text-white text-sm font-semibold px-5 py-2 hover:bg-[#C8820A] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {replyDraft.sendState === "sending" ? (
+                        <>
+                          <svg className="animate-spin" width="14" height="14" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                          </svg>
+                          Sending…
+                        </>
+                      ) : (
+                        <>
+                          <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" />
+                          </svg>
+                          Send Message
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

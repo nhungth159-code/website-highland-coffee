@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  serverExternalPackages: ["imapflow", "mailparser"],
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "images.unsplash.com" },

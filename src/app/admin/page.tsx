@@ -128,6 +128,14 @@ export default function AdminPage() {
               <Link href="/admin/applications" className="text-white/50 hover:text-white transition-colors">
                 Applications
               </Link>
+              <span className="text-white/20">/</span>
+              <Link href="/admin/contacts" className="text-white/50 hover:text-white transition-colors">
+                Contacts
+              </Link>
+              <span className="text-white/20">/</span>
+              <Link href="/admin/gift-cards" className="text-white/50 hover:text-white transition-colors">
+                Gift Cards
+              </Link>
             </div>
           </div>
         </div>
@@ -351,7 +359,7 @@ export default function AdminPage() {
                           className="flex justify-between text-sm font-bold text-[#3B1F0A] mt-2 pt-2 border-t border-[#3B1F0A]/8"
                           style={{ fontFamily: "var(--font-playfair), serif" }}
                         >
-                          <span>Total (COD)</span>
+                          <span>Total ({order.paymentMethod ?? "COD"})</span>
                           <span>{fmt(order.total)}</span>
                         </div>
                       </div>

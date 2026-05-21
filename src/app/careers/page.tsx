@@ -122,6 +122,14 @@ const JOBS: Job[] = [
 
 const DEPT_TABS: Dept[] = ["All", "Store Ops", "Corporate", "Marketing", "Technology"];
 
+const OPEN_APP_JOB: Job = {
+  title: "Open Application",
+  dept: "Corporate",
+  type: "Full-time",
+  location: "Nationwide",
+  desc: "Send us your CV and we'll reach out when something matches your profile.",
+};
+
 const DEPT_COLOR: Record<Dept, string> = {
   All:        "bg-[#3B1F0A]/8 text-[#3B1F0A]/60",
   "Store Ops":   "bg-amber-50 text-amber-700",
@@ -410,8 +418,8 @@ export default function CareersPage() {
           <p className="text-white/55 text-sm mb-5">
             Send us your CV and we&apos;ll reach out when something matches your profile.
           </p>
-          <a
-            href="mailto:careers@highlandscoffee.vn"
+          <button
+            onClick={() => openApply(OPEN_APP_JOB)}
             className="inline-flex items-center gap-2 bg-[#C8820A] text-white px-8 py-3 text-sm font-bold tracking-wider hover:bg-white hover:text-[#3B1F0A] transition-all"
           >
             <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -419,7 +427,7 @@ export default function CareersPage() {
               <path d="M22 6l-10 7L2 6" strokeLinecap="round" />
             </svg>
             Send Open Application
-          </a>
+          </button>
         </section>
       </div>
 
