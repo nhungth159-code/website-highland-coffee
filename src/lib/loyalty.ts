@@ -65,11 +65,12 @@ export interface LoyaltyConfig {
 }
 
 // ── Storage keys ─────────────────────────────────────────────────────────────
+// v2 keys force a clean re-seed — all historical fake data is discarded
 
-const CUSTOMERS_KEY    = "highlands_loyalty_customers";
-const TRANSACTIONS_KEY = "highlands_loyalty_transactions";
-const REWARDS_KEY      = "highlands_loyalty_rewards";
-const TIERS_KEY        = "highlands_loyalty_tiers";
+const CUSTOMERS_KEY    = "highlands_loyalty_customers_v2";
+const TRANSACTIONS_KEY = "highlands_loyalty_transactions_v2";
+const REWARDS_KEY      = "highlands_loyalty_rewards_v2";
+const TIERS_KEY        = "highlands_loyalty_tiers_v2";
 const CONFIG_KEY       = "highlands_loyalty_config_v2";
 
 // ── Label maps ────────────────────────────────────────────────────────────────
@@ -94,51 +95,33 @@ export const REWARD_TYPE_AUTO: Record<RewardType, boolean> = {
 
 // ── Seeded defaults ───────────────────────────────────────────────────────────
 
+// Clean baseline — identity fields (name, phone, email, joinDate) preserved.
+// All performance fields start at zero; every customer begins as Bronze.
 const DEFAULT_CUSTOMERS: LoyaltyCustomer[] = [
-  { id: "cust_01", phone: "0912345678", name: "Nguyễn Thị Lan",    email: "lan.nguyen@gmail.com",  starsBalance: 5200, starsEarned: 6800,  starsRedeemed: 1600, tier: "Gold",   totalSpend: 15400000, orderCount: 48, joinDate: "2024-03-15", lastActivity: "2026-05-18T09:30:00.000Z", createdAt: "2024-03-15T00:00:00.000Z" },
-  { id: "cust_02", phone: "0987654321", name: "Trần Minh Tuấn",    email: "tuan.tran@gmail.com",   starsBalance: 2100, starsEarned: 2650,  starsRedeemed: 550,  tier: "Silver", totalSpend: 6200000,  orderCount: 23, joinDate: "2024-08-20", lastActivity: "2026-05-17T14:15:00.000Z", createdAt: "2024-08-20T00:00:00.000Z" },
-  { id: "cust_03", phone: "0903456789", name: "Lê Thị Hoa",        email: "hoa.le@yahoo.com",      starsBalance: 450,  starsEarned: 450,   starsRedeemed: 0,    tier: "Bronze", totalSpend: 1800000,  orderCount: 8,  joinDate: "2026-03-10", lastActivity: "2026-05-15T11:20:00.000Z", createdAt: "2026-03-10T00:00:00.000Z" },
-  { id: "cust_04", phone: "0978123456", name: "Phạm Văn Đức",      email: "duc.pham@outlook.com",  starsBalance: 8900, starsEarned: 11200, starsRedeemed: 2300, tier: "Gold",   totalSpend: 28500000, orderCount: 87, joinDate: "2023-11-05", lastActivity: "2026-05-20T08:45:00.000Z", createdAt: "2023-11-05T00:00:00.000Z" },
-  { id: "cust_05", phone: "0912678901", name: "Vũ Thị Mai",        email: "mai.vu@gmail.com",      starsBalance: 1800, starsEarned: 2200,  starsRedeemed: 400,  tier: "Silver", totalSpend: 5100000,  orderCount: 19, joinDate: "2025-01-22", lastActivity: "2026-05-16T16:30:00.000Z", createdAt: "2025-01-22T00:00:00.000Z" },
-  { id: "cust_06", phone: "0963456789", name: "Hoàng Văn Nam",     email: "",                      starsBalance: 200,  starsEarned: 200,   starsRedeemed: 0,    tier: "Bronze", totalSpend: 650000,   orderCount: 3,  joinDate: "2026-04-28", lastActivity: "2026-05-10T10:00:00.000Z", createdAt: "2026-04-28T00:00:00.000Z" },
-  { id: "cust_07", phone: "0912789012", name: "Đặng Thị Thu",      email: "thu.dang@gmail.com",    starsBalance: 3400, starsEarned: 3900,  starsRedeemed: 500,  tier: "Silver", totalSpend: 9200000,  orderCount: 31, joinDate: "2024-06-14", lastActivity: "2026-05-19T12:10:00.000Z", createdAt: "2024-06-14T00:00:00.000Z" },
-  { id: "cust_08", phone: "0987890123", name: "Bùi Minh Khoa",     email: "khoa.bui@gmail.com",    starsBalance: 6100, starsEarned: 7800,  starsRedeemed: 1700, tier: "Gold",   totalSpend: 19800000, orderCount: 62, joinDate: "2024-01-10", lastActivity: "2026-05-18T15:25:00.000Z", createdAt: "2024-01-10T00:00:00.000Z" },
-  { id: "cust_09", phone: "0903123456", name: "Ngô Thị Thanh",     email: "thanh.ngo@gmail.com",   starsBalance: 750,  starsEarned: 750,   starsRedeemed: 0,    tier: "Bronze", totalSpend: 2800000,  orderCount: 11, joinDate: "2025-09-03", lastActivity: "2026-05-14T09:50:00.000Z", createdAt: "2025-09-03T00:00:00.000Z" },
-  { id: "cust_10", phone: "0978234567", name: "Đinh Văn Long",     email: "long.dinh@outlook.com", starsBalance: 1300, starsEarned: 1600,  starsRedeemed: 300,  tier: "Silver", totalSpend: 3900000,  orderCount: 15, joinDate: "2025-04-17", lastActivity: "2026-05-12T14:40:00.000Z", createdAt: "2025-04-17T00:00:00.000Z" },
-  { id: "cust_11", phone: "0901234567", name: "Lý Thị Kim Anh",    email: "kimanh.ly@gmail.com",   starsBalance: 920,  starsEarned: 1050,  starsRedeemed: 130,  tier: "Silver", totalSpend: 3100000,  orderCount: 13, joinDate: "2025-07-25", lastActivity: "2026-05-11T11:15:00.000Z", createdAt: "2025-07-25T00:00:00.000Z" },
-  { id: "cust_12", phone: "0976543210", name: "Cao Thanh Tùng",    email: "tung.cao@gmail.com",    starsBalance: 4200, starsEarned: 5100,  starsRedeemed: 900,  tier: "Gold",   totalSpend: 12600000, orderCount: 38, joinDate: "2024-05-08", lastActivity: "2026-05-20T07:55:00.000Z", createdAt: "2024-05-08T00:00:00.000Z" },
+  { id: "cust_01", phone: "0912345678", name: "Nguyễn Thị Lan",    email: "lan.nguyen@gmail.com",  starsBalance: 0, starsEarned: 0, starsRedeemed: 0, tier: "Bronze", totalSpend: 0, orderCount: 0, joinDate: "2024-03-15", lastActivity: "2024-03-15T00:00:00.000Z", createdAt: "2024-03-15T00:00:00.000Z" },
+  { id: "cust_02", phone: "0987654321", name: "Trần Minh Tuấn",    email: "tuan.tran@gmail.com",   starsBalance: 0, starsEarned: 0, starsRedeemed: 0, tier: "Bronze", totalSpend: 0, orderCount: 0, joinDate: "2024-08-20", lastActivity: "2024-08-20T00:00:00.000Z", createdAt: "2024-08-20T00:00:00.000Z" },
+  { id: "cust_03", phone: "0903456789", name: "Lê Thị Hoa",        email: "hoa.le@yahoo.com",      starsBalance: 0, starsEarned: 0, starsRedeemed: 0, tier: "Bronze", totalSpend: 0, orderCount: 0, joinDate: "2026-03-10", lastActivity: "2026-03-10T00:00:00.000Z", createdAt: "2026-03-10T00:00:00.000Z" },
+  { id: "cust_04", phone: "0978123456", name: "Phạm Văn Đức",      email: "duc.pham@outlook.com",  starsBalance: 0, starsEarned: 0, starsRedeemed: 0, tier: "Bronze", totalSpend: 0, orderCount: 0, joinDate: "2023-11-05", lastActivity: "2023-11-05T00:00:00.000Z", createdAt: "2023-11-05T00:00:00.000Z" },
+  { id: "cust_05", phone: "0912678901", name: "Vũ Thị Mai",        email: "mai.vu@gmail.com",      starsBalance: 0, starsEarned: 0, starsRedeemed: 0, tier: "Bronze", totalSpend: 0, orderCount: 0, joinDate: "2025-01-22", lastActivity: "2025-01-22T00:00:00.000Z", createdAt: "2025-01-22T00:00:00.000Z" },
+  { id: "cust_06", phone: "0963456789", name: "Hoàng Văn Nam",     email: "",                      starsBalance: 0, starsEarned: 0, starsRedeemed: 0, tier: "Bronze", totalSpend: 0, orderCount: 0, joinDate: "2026-04-28", lastActivity: "2026-04-28T00:00:00.000Z", createdAt: "2026-04-28T00:00:00.000Z" },
+  { id: "cust_07", phone: "0912789012", name: "Đặng Thị Thu",      email: "thu.dang@gmail.com",    starsBalance: 0, starsEarned: 0, starsRedeemed: 0, tier: "Bronze", totalSpend: 0, orderCount: 0, joinDate: "2024-06-14", lastActivity: "2024-06-14T00:00:00.000Z", createdAt: "2024-06-14T00:00:00.000Z" },
+  { id: "cust_08", phone: "0987890123", name: "Bùi Minh Khoa",     email: "khoa.bui@gmail.com",    starsBalance: 0, starsEarned: 0, starsRedeemed: 0, tier: "Bronze", totalSpend: 0, orderCount: 0, joinDate: "2024-01-10", lastActivity: "2024-01-10T00:00:00.000Z", createdAt: "2024-01-10T00:00:00.000Z" },
+  { id: "cust_09", phone: "0903123456", name: "Ngô Thị Thanh",     email: "thanh.ngo@gmail.com",   starsBalance: 0, starsEarned: 0, starsRedeemed: 0, tier: "Bronze", totalSpend: 0, orderCount: 0, joinDate: "2025-09-03", lastActivity: "2025-09-03T00:00:00.000Z", createdAt: "2025-09-03T00:00:00.000Z" },
+  { id: "cust_10", phone: "0978234567", name: "Đinh Văn Long",     email: "long.dinh@outlook.com", starsBalance: 0, starsEarned: 0, starsRedeemed: 0, tier: "Bronze", totalSpend: 0, orderCount: 0, joinDate: "2025-04-17", lastActivity: "2025-04-17T00:00:00.000Z", createdAt: "2025-04-17T00:00:00.000Z" },
+  { id: "cust_11", phone: "0901234567", name: "Lý Thị Kim Anh",    email: "kimanh.ly@gmail.com",   starsBalance: 0, starsEarned: 0, starsRedeemed: 0, tier: "Bronze", totalSpend: 0, orderCount: 0, joinDate: "2025-07-25", lastActivity: "2025-07-25T00:00:00.000Z", createdAt: "2025-07-25T00:00:00.000Z" },
+  { id: "cust_12", phone: "0976543210", name: "Cao Thanh Tùng",    email: "tung.cao@gmail.com",    starsBalance: 0, starsEarned: 0, starsRedeemed: 0, tier: "Bronze", totalSpend: 0, orderCount: 0, joinDate: "2024-05-08", lastActivity: "2024-05-08T00:00:00.000Z", createdAt: "2024-05-08T00:00:00.000Z" },
 ];
 
-const DEFAULT_TRANSACTIONS: StarTransaction[] = [
-  { id: "txn_01", customerId: "cust_04", type: "earn",   stars: 190, description: "Purchase — 950,000₫",            orderAmount: 950000,  createdAt: "2026-05-20T08:45:00.000Z" },
-  { id: "txn_02", customerId: "cust_12", type: "earn",   stars: 152, description: "Purchase — 760,000₫",            orderAmount: 760000,  createdAt: "2026-05-20T07:55:00.000Z" },
-  { id: "txn_03", customerId: "cust_07", type: "earn",   stars: 93,  description: "Purchase — 620,000₫",            orderAmount: 620000,  createdAt: "2026-05-19T12:10:00.000Z" },
-  { id: "txn_04", customerId: "cust_01", type: "earn",   stars: 170, description: "Purchase — 850,000₫",            orderAmount: 850000,  createdAt: "2026-05-18T09:30:00.000Z" },
-  { id: "txn_05", customerId: "cust_08", type: "earn",   stars: 224, description: "Purchase — 1,120,000₫",          orderAmount: 1120000, createdAt: "2026-05-18T15:25:00.000Z" },
-  { id: "txn_06", customerId: "cust_02", type: "earn",   stars: 68,  description: "Purchase — 450,000₫",            orderAmount: 450000,  createdAt: "2026-05-17T14:15:00.000Z" },
-  { id: "txn_07", customerId: "cust_05", type: "earn",   stars: 81,  description: "Purchase — 540,000₫",            orderAmount: 540000,  createdAt: "2026-05-16T16:30:00.000Z" },
-  { id: "txn_08", customerId: "cust_03", type: "earn",   stars: 38,  description: "Purchase — 380,000₫",            orderAmount: 380000,  createdAt: "2026-05-15T11:20:00.000Z" },
-  { id: "txn_09", customerId: "cust_04", type: "redeem", stars: -500,description: "Redeemed: Star Cashback",                               createdAt: "2026-05-15T14:00:00.000Z" },
-  { id: "txn_10", customerId: "cust_09", type: "earn",   stars: 43,  description: "Purchase — 430,000₫",            orderAmount: 430000,  createdAt: "2026-05-14T09:50:00.000Z" },
-  { id: "txn_11", customerId: "cust_10", type: "earn",   stars: 65,  description: "Purchase — 430,000₫",            orderAmount: 430000,  createdAt: "2026-05-12T14:40:00.000Z" },
-  { id: "txn_12", customerId: "cust_08", type: "redeem", stars: -300,description: "Redeemed: Free Highlands Drink",                        createdAt: "2026-05-08T09:20:00.000Z" },
-  { id: "txn_13", customerId: "cust_12", type: "earn",   stars: 240, description: "Purchase — 1,200,000₫",          orderAmount: 1200000, createdAt: "2026-05-05T15:30:00.000Z" },
-  { id: "txn_14", customerId: "cust_07", type: "redeem", stars: -500,description: "Redeemed: Star Cashback",                               createdAt: "2026-05-05T11:00:00.000Z" },
-  { id: "txn_15", customerId: "cust_04", type: "earn",   stars: 296, description: "Purchase — 1,480,000₫",          orderAmount: 1480000, createdAt: "2026-05-10T11:30:00.000Z" },
-  { id: "txn_16", customerId: "cust_01", type: "redeem", stars: -300,description: "Redeemed: Free Highlands Drink",                        createdAt: "2026-05-10T10:15:00.000Z" },
-  { id: "txn_17", customerId: "cust_11", type: "earn",   stars: 58,  description: "Purchase — 390,000₫",            orderAmount: 390000,  createdAt: "2026-05-11T11:15:00.000Z" },
-  { id: "txn_18", customerId: "cust_06", type: "earn",   stars: 100, description: "Welcome bonus — new member",                           createdAt: "2026-04-28T10:00:00.000Z" },
-  { id: "txn_19", customerId: "cust_03", type: "earn",   stars: 100, description: "Welcome bonus — new member",                           createdAt: "2026-03-10T10:00:00.000Z" },
-  { id: "txn_20", customerId: "cust_02", type: "earn",   stars: 142, description: "Purchase — 940,000₫",            orderAmount: 940000,  createdAt: "2026-04-22T13:00:00.000Z" },
-];
+// No pre-seeded transactions — programme starts with a clean history
+const DEFAULT_TRANSACTIONS: StarTransaction[] = [];
 
 const DEFAULT_REWARDS: LoyaltyReward[] = [
-  { id: "reward_cashback",     name: "Star Cashback",          description: "Redeem 500 stars for 50,000₫ off your next order.", type: "discount",      pointsCost: 500, value: "50,000₫ off",        isActive: true, validFrom: "2026-01-01", validTo: "", redemptionCount: 4231,  eligibleTiers: ["Bronze", "Silver", "Gold"], createdAt: "2026-01-01T00:00:00.000Z" },
-  { id: "reward_free_drink",   name: "Free Highlands Drink",   description: "Redeem 300 stars for any standard-size drink.",     type: "free_item",     pointsCost: 300, value: "Free standard drink",isActive: true, validFrom: "2026-01-01", validTo: "", redemptionCount: 2876,  eligibleTiers: ["Silver", "Gold"],           createdAt: "2026-01-01T00:00:00.000Z" },
-  { id: "reward_birthday",     name: "Birthday Treat",         description: "Auto-issued: complimentary drink on birthday month.",type: "birthday",      pointsCost: 0,   value: "Free birthday drink",isActive: true, validFrom: "2026-01-01", validTo: "", redemptionCount: 618,   eligibleTiers: ["Bronze", "Silver", "Gold"], createdAt: "2026-01-01T00:00:00.000Z" },
-  { id: "reward_welcome",      name: "Welcome Bonus",          description: "Auto-issued: 100 stars on new member sign-up.",     type: "welcome_bonus", pointsCost: 0,   value: "100 stars on sign-up",isActive: true,validFrom: "2026-01-01", validTo: "", redemptionCount: 14320, eligibleTiers: ["Bronze"],                    createdAt: "2026-01-01T00:00:00.000Z" },
-  { id: "reward_double_stars", name: "Double Stars Weekend",   description: "2× stars on all purchases every Sat & Sun.",       type: "double_points", pointsCost: 0,   value: "2× stars earned",    isActive: true, validFrom: "2026-01-01", validTo: "", redemptionCount: 89400, eligibleTiers: ["Bronze", "Silver", "Gold"], createdAt: "2026-01-01T00:00:00.000Z" },
-  { id: "reward_referral",     name: "Refer a Friend",         description: "200 stars for each friend who places first order.", type: "referral",      pointsCost: 0,   value: "200 stars/referral", isActive: true, validFrom: "2026-01-01", validTo: "", redemptionCount: 3142,  eligibleTiers: ["Bronze", "Silver", "Gold"], createdAt: "2026-01-01T00:00:00.000Z" },
+  { id: "reward_cashback",     name: "Star Cashback",          description: "Redeem 500 stars for 50,000₫ off your next order.", type: "discount",      pointsCost: 500, value: "50,000₫ off",         isActive: true, validFrom: "2026-01-01", validTo: "", redemptionCount: 0, eligibleTiers: ["Bronze", "Silver", "Gold"], createdAt: "2026-01-01T00:00:00.000Z" },
+  { id: "reward_free_drink",   name: "Free Highlands Drink",   description: "Redeem 300 stars for any standard-size drink.",     type: "free_item",     pointsCost: 300, value: "Free standard drink", isActive: true, validFrom: "2026-01-01", validTo: "", redemptionCount: 0, eligibleTiers: ["Silver", "Gold"],           createdAt: "2026-01-01T00:00:00.000Z" },
+  { id: "reward_birthday",     name: "Birthday Treat",         description: "Auto-issued: complimentary drink on birthday month.",type: "birthday",      pointsCost: 0,   value: "Free birthday drink", isActive: true, validFrom: "2026-01-01", validTo: "", redemptionCount: 0, eligibleTiers: ["Bronze", "Silver", "Gold"], createdAt: "2026-01-01T00:00:00.000Z" },
+  { id: "reward_welcome",      name: "Welcome Bonus",          description: "Auto-issued: 100 stars on new member sign-up.",     type: "welcome_bonus", pointsCost: 0,   value: "100 stars on sign-up",isActive: true, validFrom: "2026-01-01", validTo: "", redemptionCount: 0, eligibleTiers: ["Bronze"],                    createdAt: "2026-01-01T00:00:00.000Z" },
+  { id: "reward_double_stars", name: "Double Stars Weekend",   description: "2× stars on all purchases every Sat & Sun.",       type: "double_points", pointsCost: 0,   value: "2× stars earned",     isActive: true, validFrom: "2026-01-01", validTo: "", redemptionCount: 0, eligibleTiers: ["Bronze", "Silver", "Gold"], createdAt: "2026-01-01T00:00:00.000Z" },
+  { id: "reward_referral",     name: "Refer a Friend",         description: "200 stars for each friend who places first order.", type: "referral",      pointsCost: 0,   value: "200 stars/referral",  isActive: true, validFrom: "2026-01-01", validTo: "", redemptionCount: 0, eligibleTiers: ["Bronze", "Silver", "Gold"], createdAt: "2026-01-01T00:00:00.000Z" },
 ];
 
 const DEFAULT_TIERS: LoyaltyTier[] = [
@@ -431,6 +414,36 @@ export function updateTier(name: TierName, data: Partial<Omit<LoyaltyTier, "name
   const updated = loadTiers().map((t) => (t.name === name ? { ...t, ...data } : t));
   saveTiers(updated);
   return updated;
+}
+
+// ── Programme reset ───────────────────────────────────────────────────────────
+
+/**
+ * Resets all star/purchase data while preserving customer identity.
+ * Customers retain name, phone, email, joinDate, and createdAt.
+ * All stars, orders, spend, tiers, and transaction history are cleared.
+ * Reward redemption counts are zeroed. Tier and config settings are unchanged.
+ */
+export function resetProgrammeData(tiers: LoyaltyTier[]): {
+  customers: LoyaltyCustomer[];
+  transactions: StarTransaction[];
+  rewards: LoyaltyReward[];
+} {
+  const customers = loadCustomers().map((c) => ({
+    ...c,
+    starsBalance: 0,
+    starsEarned: 0,
+    starsRedeemed: 0,
+    tier: computeTier(0, tiers) as TierName,
+    totalSpend: 0,
+    orderCount: 0,
+    lastActivity: c.createdAt,
+  }));
+  const rewards = loadRewards().map((r) => ({ ...r, redemptionCount: 0 }));
+  saveCustomers(customers);
+  saveTransactions([]);
+  saveRewards(rewards);
+  return { customers, transactions: [], rewards };
 }
 
 // ── Config ────────────────────────────────────────────────────────────────────

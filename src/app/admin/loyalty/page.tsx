@@ -8,6 +8,7 @@ import {
   getRewards, createReward, updateReward, deleteReward, toggleReward,
   getTiers, updateTier,
   getConfig, saveConfig,
+  resetProgrammeData,
   calculateStarsForPurchase,
   REWARD_TYPE_LABELS, REWARD_TYPE_AUTO,
 } from "@/lib/loyalty";
@@ -73,14 +74,14 @@ const EMPTY_REWARD: Omit<LoyaltyReward, "id" | "createdAt" | "redemptionCount"> 
 
 // ── Confirm dialog ────────────────────────────────────────────────────────────
 
-function Confirm({ message, onConfirm, onCancel }: { message: string; onConfirm: () => void; onCancel: () => void }) {
+function Confirm({ message, onConfirm, onCancel, confirmLabel = "Delete" }: { message: string; onConfirm: () => void; onCancel: () => void; confirmLabel?: string }) {
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-[#1A0D00]/70 backdrop-blur-sm" onClick={onCancel} />
       <div className="relative bg-white w-full max-w-sm p-6 shadow-2xl">
         <p className="text-[#3B1F0A] font-semibold mb-6 leading-relaxed">{message}</p>
         <div className="flex gap-2">
-          <button onClick={onConfirm} className="flex-1 bg-red-600 text-white py-2.5 text-sm font-bold hover:bg-red-700 transition-colors">Delete</button>
+          <button onClick={onConfirm} className="flex-1 bg-red-600 text-white py-2.5 text-sm font-bold hover:bg-red-700 transition-colors">{confirmLabel}</button>
           <button onClick={onCancel}  className="flex-1 border border-[#3B1F0A]/15 text-[#3B1F0A]/60 py-2.5 text-sm font-semibold hover:text-[#3B1F0A] transition-colors">Cancel</button>
         </div>
       </div>
@@ -714,6 +715,9 @@ export default function AdminLoyaltyPage() {
   // Tier tab state
   const [tierModal,     setTierModal]    = useState<{ open: boolean; tier: LoyaltyTier | null }>({ open: false, tier: null });
 
+  // Reset confirmation
+  const [resetConfirm, setResetConfirm] = useState(false);
+
   // ── Derived state — ALL useMemo/useMemo before early return ──
 
   const totalStarsBalance = useMemo(() => customers.reduce((s, c) => s + c.starsBalance, 0), [customers]);
@@ -848,6 +852,15 @@ export default function AdminLoyaltyPage() {
     setConfig(configDraft);
     setConfigSaved(true);
     setTimeout(() => setConfigSaved(false), 3000);
+  };
+
+  const handleResetProgramme = () => {
+    const result = resetProgrammeData(tiers);
+    setCustomers(result.customers);
+    setTransactions(result.transactions);
+    setRewards(result.rewards);
+    setCustDetail(null);
+    setResetConfirm(false);
   };
 
   const TABS = [
@@ -1368,6 +1381,24 @@ export default function AdminLoyaltyPage() {
               </div>
             </div>
 
+            {/* Reset Programme Data */}
+            <div className="bg-white border border-red-200 p-6">
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                <div>
+                  <h3 className="text-sm font-bold text-red-700">Reset Programme Data</h3>
+                  <p className="text-xs text-[#3B1F0A]/50 mt-1 max-w-lg leading-relaxed">
+                    Clears all star balances, purchase history, and transaction records for every customer.
+                    Customer names and phone numbers are preserved. All tiers reset to Bronze.
+                    Reward redemption counts are zeroed. This action cannot be undone.
+                  </p>
+                </div>
+                <button onClick={() => setResetConfirm(true)}
+                  className="shrink-0 px-5 py-2.5 border-2 border-red-300 text-red-600 text-sm font-bold hover:bg-red-600 hover:text-white hover:border-red-600 transition-all">
+                  Reset All Data
+                </button>
+              </div>
+            </div>
+
             {/* Tier management moved here for completeness */}
             <div>
               <h2 className="text-xl font-bold text-[#3B1F0A] mb-1" style={{ fontFamily: "var(--font-playfair), serif" }}>Tier Benefits</h2>
@@ -1416,6 +1447,16 @@ export default function AdminLoyaltyPage() {
         )}
 
       </div>
+
+      {/* ── Reset confirmation ── */}
+      {resetConfirm && (
+        <Confirm
+          message="This will permanently clear all star balances, purchase history, and transaction records. Customer names and phone numbers are kept. This cannot be undone — are you sure?"
+          onConfirm={handleResetProgramme}
+          onCancel={() => setResetConfirm(false)}
+          confirmLabel="Yes, Reset"
+        />
+      )}
 
       {/* ── Modals ── */}
       {custModal.open && (
