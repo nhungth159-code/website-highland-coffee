@@ -397,6 +397,28 @@ export default function AdminReportsPage() {
 
       <div className="max-w-7xl mx-auto px-4 lg:px-8 py-6 space-y-5">
 
+        {/* ── Interactive Explorer Banner ── */}
+        <Link href="/admin/reports/interactive"
+          className="flex items-center justify-between bg-[#1A0D00] px-5 py-4 hover:bg-[#3B1F0A] transition-colors group">
+          <div className="flex items-center gap-4">
+            <div className="w-9 h-9 bg-[#C8820A]/15 flex items-center justify-center shrink-0">
+              <svg width="18" height="18" fill="none" stroke="#C8820A" strokeWidth="1.5" viewBox="0 0 24 24">
+                <path d="M4 6h16M4 12h16M4 18h7" strokeLinecap="round" />
+                <circle cx="17" cy="18" r="3" /><path d="M17 15v1.5M17 21v-1.5M14 18h1.5M20 18h-1.5M15.05 15.05l1.06 1.06M19.9 19.9l-1.06-1.06M19.9 15.05l-1.06 1.06M15.05 19.9l1.06-1.06" strokeLinecap="round" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-[#C8820A] text-[10px] font-bold tracking-[0.3em] uppercase mb-0.5">New</p>
+              <p className="text-white text-sm font-bold" style={{ fontFamily: "var(--font-playfair), serif" }}>Interactive Explorer</p>
+              <p className="text-white/40 text-xs">Right-click to group, filter, and pivot data on the fly. Save favourite views.</p>
+            </div>
+          </div>
+          <svg width="16" height="16" fill="none" stroke="white" strokeWidth="2" viewBox="0 0 24 24"
+            className="text-white/30 group-hover:text-[#C8820A] transition-colors shrink-0">
+            <path d="M9 18l6-6-6-6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </Link>
+
         {/* ── Title + Period Filter ── */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
