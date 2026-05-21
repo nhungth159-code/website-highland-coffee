@@ -140,6 +140,10 @@ export default function AdminPage() {
               <Link href="/admin/promotions" className="text-white/50 hover:text-white transition-colors">
                 Promotions
               </Link>
+              <span className="text-white/20">/</span>
+              <Link href="/admin/loyalty" className="text-white/50 hover:text-white transition-colors">
+                Loyalty
+              </Link>
             </div>
           </div>
         </div>

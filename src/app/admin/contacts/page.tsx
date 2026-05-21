@@ -269,6 +269,8 @@ export default function AdminContactsPage() {
             <Link href="/admin/gift-cards" className="text-white/50 hover:text-white transition-colors">Gift Cards</Link>
             <span className="text-white/20">/</span>
             <Link href="/admin/promotions" className="text-white/50 hover:text-white transition-colors">Promotions</Link>
+            <span className="text-white/20">/</span>
+            <Link href="/admin/loyalty" className="text-white/50 hover:text-white transition-colors">Loyalty</Link>
           </div>
         </div>
         <div className="flex items-center gap-3">
