@@ -405,6 +405,8 @@ export default function AdminPromotionsPage() {
               <span className="text-white font-semibold">Promotions</span>
               <span className="text-white/20">/</span>
               <Link href="/admin/loyalty" className="text-white/50 hover:text-white transition-colors">Loyalty</Link>
+              <span className="text-white/20">/</span>
+              <Link href="/admin/reports" className="text-white/50 hover:text-white transition-colors">Reports</Link>
             </div>
           </div>
         </div>
