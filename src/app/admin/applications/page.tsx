@@ -327,6 +327,9 @@ export default function ApplicationsAdminPage() {
           >
             Job Applications
           </h1>
+          <p className="text-sm text-[#3B1F0A]/45 mt-0.5">
+            Review and manage candidates who applied through the careers page.
+          </p>
         </div>
 
         {/* Stats */}

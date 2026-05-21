@@ -296,9 +296,7 @@ export default function AdminPromotionsPage() {
     setMounted(true);
   }, []);
 
-  if (!mounted) return null;
-
-  // Stats
+  // ── Derived state (hooks must be before any early return) ──
   const stats = useMemo(() => {
     const active    = promos.filter((p) => getPromoStatus(p) === "active");
     const totalUses = promos.reduce((s, p) => s + p.usedCount, 0);
@@ -307,7 +305,6 @@ export default function AdminPromotionsPage() {
     return { active: active.length, totalUses, totalDisc, avgDisc };
   }, [promos]);
 
-  // Filtered list
   const visible = useMemo(() => {
     let list = filterStatus === "all" ? promos : promos.filter((p) => getPromoStatus(p) === filterStatus);
     if (search.trim()) {
@@ -316,6 +313,8 @@ export default function AdminPromotionsPage() {
     }
     return list;
   }, [promos, filterStatus, search]);
+
+  if (!mounted) return null;
 
   const openCreate = () => setModal({ open: true, promo: { ...EMPTY_FORM } });
 
@@ -437,7 +436,9 @@ export default function AdminPromotionsPage() {
             <h1 className="text-xl font-bold text-[#3B1F0A]" style={{ fontFamily: "var(--font-playfair), serif" }}>
               Promotions
             </h1>
-            <p className="text-xs text-[#3B1F0A]/45 mt-0.5">{promos.length} total promotion{promos.length !== 1 ? "s" : ""}</p>
+            <p className="text-xs text-[#3B1F0A]/45 mt-0.5">
+              Create and manage discount codes, special offers, and loyalty rewards to drive customer engagement.
+            </p>
           </div>
           <button onClick={openCreate}
             className="flex items-center gap-2 bg-[#C8820A] text-white px-5 py-2.5 text-sm font-bold hover:bg-[#3B1F0A] transition-colors shrink-0">

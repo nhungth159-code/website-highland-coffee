@@ -524,6 +524,16 @@ export default function AdminGiftCardsPage() {
 
       <div className="max-w-7xl mx-auto px-4 lg:px-8 py-6 space-y-6">
 
+        {/* ── Page title ── */}
+        <div>
+          <h1 className="text-2xl font-bold text-[#3B1F0A]" style={{ fontFamily: "var(--font-playfair), serif" }}>
+            Gift Cards
+          </h1>
+          <p className="text-sm text-[#3B1F0A]/45 mt-0.5">
+            Issue, track, and manage digital gift cards and customer balances.
+          </p>
+        </div>
+
         {/* ── Stats ──────────────────────────────────────────── */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           {STAT_CARDS.map((s) => (

@@ -157,6 +157,16 @@ export default function AdminPage() {
 
       <div className="max-w-6xl mx-auto px-4 lg:px-8 py-6 space-y-6">
 
+        {/* ── Page title ─────────────────────────────────── */}
+        <div>
+          <h1 className="text-2xl font-bold text-[#3B1F0A]" style={{ fontFamily: "var(--font-playfair), serif" }}>
+            Orders
+          </h1>
+          <p className="text-sm text-[#3B1F0A]/45 mt-0.5">
+            Monitor and fulfil customer orders from placement through to delivery.
+          </p>
+        </div>
+
         {/* ── Stats ─────────────────────────────────────── */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
