@@ -5,6 +5,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { saveOrder } from "@/lib/orders";
 import { findGiftCard, updateGiftCardBalance, type GiftCard } from "@/lib/giftcards";
+import { validatePromoCode, calcDiscount, recordPromoUsage } from "@/lib/promotions";
+import type { Promotion } from "@/lib/promotions";
 
 export type CartItem = {
   name: string;
@@ -26,10 +28,6 @@ type PaymentMethod = "cod" | "momo" | "vnpay" | "zalopay" | "card" | "bank" | "g
 
 const DELIVERY_FEE = 15000;
 const FREE_THRESHOLD = 100000;
-
-const PROMO_CODES: Record<string, { label: string; pct: number }> = {
-  HIGHLANDS25: { label: "25% off", pct: 25 },
-};
 
 const PAYMENT_METHODS: {
   id: PaymentMethod;
@@ -223,7 +221,7 @@ export default function CartDrawer({ cart, isOpen, onClose, onUpdate, onClearCar
   const [loading, setLoading] = useState(false);
   const [orderNum, setOrderNum] = useState("");
   const [promoInput, setPromoInput] = useState("");
-  const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
+  const [appliedPromo, setAppliedPromo] = useState<Promotion | null>(null);
   const [promoError, setPromoError] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cod");
   const [gcInput, setGcInput] = useState("");
@@ -231,8 +229,8 @@ export default function CartDrawer({ cart, isOpen, onClose, onUpdate, onClearCar
   const [gcError, setGcError] = useState("");
 
   const subtotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
-  const deliveryFee = subtotal >= FREE_THRESHOLD ? 0 : DELIVERY_FEE;
-  const promoDiscount = appliedPromo ? Math.round(subtotal * PROMO_CODES[appliedPromo].pct / 100) : 0;
+  const deliveryFee = (appliedPromo?.type === "free_delivery" || subtotal >= FREE_THRESHOLD) ? 0 : DELIVERY_FEE;
+  const promoDiscount = appliedPromo ? calcDiscount(appliedPromo, subtotal) : 0;
   const total = subtotal + deliveryFee - promoDiscount;
   const count = cart.reduce((s, i) => s + i.quantity, 0);
 
@@ -240,12 +238,14 @@ export default function CartDrawer({ cart, isOpen, onClose, onUpdate, onClearCar
 
   const applyPromo = () => {
     const code = promoInput.trim().toUpperCase();
-    if (PROMO_CODES[code]) {
-      setAppliedPromo(code);
+    if (!code) return;
+    const result = validatePromoCode(code, subtotal);
+    if (result.valid) {
+      setAppliedPromo(result.promo);
       setPromoError("");
       setPromoInput("");
     } else {
-      setPromoError("Invalid code. Try HIGHLANDS25.");
+      setPromoError(result.error);
     }
   };
 
@@ -308,6 +308,10 @@ export default function CartDrawer({ cart, isOpen, onClose, onUpdate, onClearCar
 
     if (paymentMethod === "giftcard" && gcCard && gcCard !== "not_found") {
       updateGiftCardBalance(gcCard.code, total);
+    }
+
+    if (appliedPromo) {
+      recordPromoUsage(appliedPromo.code, promoDiscount);
     }
 
     setStep("success");
@@ -441,7 +445,7 @@ export default function CartDrawer({ cart, isOpen, onClose, onUpdate, onClearCar
                   )}
                   {promoDiscount > 0 && appliedPromo && (
                     <div className="flex justify-between text-green-600 font-medium">
-                      <span>Promo ({PROMO_CODES[appliedPromo].label})</span>
+                      <span>Promo ({appliedPromo.name})</span>
                       <span>−{fmt(promoDiscount)}</span>
                     </div>
                   )}
@@ -499,7 +503,7 @@ export default function CartDrawer({ cart, isOpen, onClose, onUpdate, onClearCar
                 ))}
                 {promoDiscount > 0 && appliedPromo && (
                   <div className="flex justify-between text-sm py-0.5 text-green-600 font-medium">
-                    <span>Promo ({PROMO_CODES[appliedPromo].label})</span>
+                    <span>Promo ({appliedPromo.name})</span>
                     <span>−{fmt(promoDiscount)}</span>
                   </div>
                 )}
@@ -575,8 +579,8 @@ export default function CartDrawer({ cart, isOpen, onClose, onUpdate, onClearCar
                       <svg width="14" height="14" fill="none" stroke="#16a34a" strokeWidth="2.5" viewBox="0 0 24 24">
                         <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
-                      <span className="text-green-700 font-bold text-sm tracking-wider">{appliedPromo}</span>
-                      <span className="text-green-600 text-xs">· {PROMO_CODES[appliedPromo].label} applied</span>
+                      <span className="text-green-700 font-bold text-sm tracking-wider">{appliedPromo.code}</span>
+                      <span className="text-green-600 text-xs">· {appliedPromo.name} applied</span>
                     </div>
                     <button onClick={() => setAppliedPromo(null)} className="text-xs text-green-600 hover:text-red-500 transition-colors">
                       Remove

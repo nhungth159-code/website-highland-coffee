@@ -276,6 +276,10 @@ export default function ApplicationsAdminPage() {
             <Link href="/admin/gift-cards" className="text-white/50 hover:text-white transition-colors">
               Gift Cards
             </Link>
+            <span className="text-white/20">/</span>
+            <Link href="/admin/promotions" className="text-white/50 hover:text-white transition-colors">
+              Promotions
+            </Link>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -323,9 +327,6 @@ export default function ApplicationsAdminPage() {
           >
             Job Applications
           </h1>
-          <p className="text-sm text-[#3B1F0A]/45 mt-0.5">
-            Review and manage candidates who applied through the careers page.
-          </p>
         </div>
 
         {/* Stats */}

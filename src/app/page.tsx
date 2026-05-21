@@ -5,6 +5,8 @@ import Link from "next/link";
 import Image from "next/image";
 import CartDrawer, { type CartItem } from "@/components/CartDrawer";
 import { getT } from "@/lib/i18n";
+import { getPromotions, getPromoStatus } from "@/lib/promotions";
+import type { Promotion } from "@/lib/promotions";
 
 const U = "https://images.unsplash.com/photo-";
 const P = "https://plus.unsplash.com/premium_photo-";
@@ -55,15 +57,18 @@ export default function Home() {
   const [cartOpen, setCartOpen] = useState(false);
   const [promoOpen, setPromoOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [activePromo, setActivePromo] = useState<Promotion | null>(null);
 
   const t = getT("en");
 
-  // Load cart from localStorage on mount
+  // Load cart and active promo from localStorage on mount
   useEffect(() => {
     try {
       const raw: CartItem[] = JSON.parse(localStorage.getItem("highlands_cart") || "[]");
       if (raw.length > 0) setCart(raw);
     } catch {}
+    const promo = getPromotions().find((p) => getPromoStatus(p) === "active") ?? null;
+    setActivePromo(promo);
   }, []);
 
   useEffect(() => {
@@ -97,7 +102,8 @@ export default function Home() {
   };
 
   const copyPromoCode = () => {
-    navigator.clipboard.writeText("HIGHLANDS25").then(() => {
+    const code = activePromo?.code ?? "HIGHLANDS25";
+    navigator.clipboard.writeText(code).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     });
@@ -323,12 +329,15 @@ export default function Home() {
       </section>
 
       {/* ─── PROMOTIONS BANNER ───────────────────────────────────────────── */}
+      {activePromo && (
       <section id="promotions" className="bg-[#C8820A] py-12 lg:py-14 px-6 lg:px-8">
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-6 lg:gap-12">
           <div className="text-center lg:text-left">
             <p className="text-white/65 text-[11px] font-semibold tracking-[0.35em] uppercase mb-2">{t.promo.eyebrow}</p>
-            <p className="text-3xl md:text-4xl font-bold text-white" style={{ fontFamily: "var(--font-playfair), serif" }}>{t.promo.heading}</p>
-            <p className="text-white/75 text-sm mt-2 leading-relaxed">{t.promo.text}</p>
+            <p className="text-3xl md:text-4xl font-bold text-white" style={{ fontFamily: "var(--font-playfair), serif" }}>{activePromo.name}</p>
+            <p className="text-white/75 text-sm mt-2 leading-relaxed">
+              {activePromo.description || `Use code ${activePromo.code} at checkout. Valid through ${activePromo.endDate.split("-").reverse().join("/")}.`}
+            </p>
           </div>
           <div className="flex flex-col sm:flex-row items-center gap-4 shrink-0">
             <button onClick={() => setPromoOpen(true)} className="bg-white text-[#C8820A] font-bold px-8 py-3.5 text-sm tracking-wider hover:bg-[#3B1F0A] hover:text-white transition-all duration-200">
@@ -337,6 +346,7 @@ export default function Home() {
           </div>
         </div>
       </section>
+      )}
 
       {/* ─── MENU PREVIEW ────────────────────────────────────────────────── */}
       <section id="menu" className="py-24 lg:py-32 px-6 lg:px-8 bg-[#FAF6EF]">
@@ -423,7 +433,7 @@ export default function Home() {
       />
 
       {/* ─── PROMO MODAL ─────────────────────────────────────────────────── */}
-      {promoOpen && (
+      {promoOpen && activePromo && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center px-4">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setPromoOpen(false)} />
           <div className="relative bg-[#FAF6EF] w-full max-w-sm shadow-2xl overflow-hidden">
@@ -434,20 +444,29 @@ export default function Home() {
             </button>
             <div className="bg-[#C8820A] px-6 pt-6 pb-7 text-white">
               <p className="text-[10px] font-semibold tracking-[0.35em] uppercase opacity-70 mb-1">{t.modal.eyebrow}</p>
-              <h3 className="text-2xl font-bold leading-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>{t.modal.heading}</h3>
-              <p className="text-white/70 text-sm mt-1.5">{t.modal.validity}</p>
+              <h3 className="text-2xl font-bold leading-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>{activePromo.name}</h3>
+              <p className="text-white/70 text-sm mt-1.5">
+                Valid through {activePromo.endDate.split("-").reverse().join("/")}
+                {activePromo.maxUses > 0 ? ` · ${activePromo.maxUses - activePromo.usedCount} uses remaining` : ""}
+              </p>
             </div>
             <div className="px-6 py-6">
               <p className="text-sm text-[#3B1F0A]/60 mb-5">
                 {t.modal.instructionBefore}<strong className="text-[#3B1F0A]">{t.modal.instructionBold}</strong>{t.modal.instructionAfter}
               </p>
               <div className="border-2 border-dashed border-[#C8820A]/40 bg-[#C8820A]/5 px-5 py-4 flex items-center justify-between mb-1">
-                <span className="text-2xl font-bold tracking-[0.15em] text-[#3B1F0A]" style={{ fontFamily: "var(--font-playfair), serif" }}>HIGHLANDS25</span>
+                <span className="text-2xl font-bold tracking-[0.15em] text-[#3B1F0A]" style={{ fontFamily: "var(--font-playfair), serif" }}>{activePromo.code}</span>
                 <button onClick={copyPromoCode} className={`text-sm font-bold px-3 py-1.5 transition-all ${copied ? "text-green-600 bg-green-50" : "text-[#C8820A] hover:text-[#3B1F0A]"}`}>
                   {copied ? t.modal.copied : t.modal.copy}
                 </button>
               </div>
-              <p className="text-xs text-[#3B1F0A]/30 mb-6">{t.modal.saves}</p>
+              <p className="text-xs text-[#3B1F0A]/30 mb-6">
+                {activePromo.type === "percent" && `Saves ${activePromo.value}% on your order subtotal`}
+                {activePromo.type === "fixed" && `Saves ${activePromo.value.toLocaleString("vi-VN")}₫ on your order`}
+                {activePromo.type === "bogo" && `Buy ${activePromo.bogoDetails?.buyQty ?? 1}, get ${activePromo.bogoDetails?.getQty ?? 1} free`}
+                {activePromo.type === "free_delivery" && "Waives delivery fee on your order"}
+                {activePromo.minPurchase > 0 && ` · Min. order ${activePromo.minPurchase.toLocaleString("vi-VN")}₫`}
+              </p>
               <button onClick={() => { setPromoOpen(false); setCartOpen(true); }} className="w-full bg-[#C8820A] text-white py-3.5 font-bold tracking-wider text-sm hover:bg-[#3B1F0A] transition-colors">
                 {t.modal.orderBtn}
               </button>

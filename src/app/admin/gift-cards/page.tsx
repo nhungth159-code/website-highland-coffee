@@ -494,6 +494,8 @@ export default function AdminGiftCardsPage() {
               <Link href="/admin/contacts" className="text-white/50 hover:text-white transition-colors">Contacts</Link>
               <span className="text-white/20">/</span>
               <span className="text-white font-semibold">Gift Cards</span>
+              <span className="text-white/20">/</span>
+              <Link href="/admin/promotions" className="text-white/50 hover:text-white transition-colors">Promotions</Link>
             </nav>
           </div>
         </div>
