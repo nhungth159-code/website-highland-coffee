@@ -7,6 +7,8 @@ import { saveOrder } from "@/lib/orders";
 import { findGiftCard, updateGiftCardBalance, type GiftCard } from "@/lib/giftcards";
 import { validatePromoCode, calcDiscount, recordPromoUsage } from "@/lib/promotions";
 import type { Promotion } from "@/lib/promotions";
+import { getCustomers } from "@/lib/loyalty";
+import type { LoyaltyCustomer } from "@/lib/loyalty";
 
 export type CartItem = {
   name: string;
@@ -228,6 +230,30 @@ export default function CartDrawer({ cart, isOpen, onClose, onUpdate, onClearCar
   const [gcCard, setGcCard] = useState<GiftCard | null | "not_found">(null);
   const [gcError, setGcError] = useState("");
 
+  // Member vs anonymous checkout
+  const [checkoutMode, setCheckoutMode] = useState<"unset" | "member" | "anonymous">("unset");
+  const [memberPhone, setMemberPhone] = useState("");
+  const [memberLookup, setMemberLookup] = useState<LoyaltyCustomer | null | "not_found">(null);
+
+  const TIER_COLORS: Record<string, { bg: string; text: string; border: string }> = {
+    Gold:   { bg: "#FFF8EC", text: "#C8820A", border: "#C8820A40" },
+    Silver: { bg: "#F5F5F5", text: "#6B7280", border: "#9CA3AF40" },
+    Bronze: { bg: "#FFF7ED", text: "#92400E", border: "#D9770640" },
+  };
+
+  const lookupMember = () => {
+    const phone = memberPhone.trim();
+    if (!phone) return;
+    const customers = getCustomers();
+    const found = customers.find((c) => c.phone === phone);
+    if (found) {
+      setMemberLookup(found);
+      setForm((f) => ({ ...f, name: found.name, phone: found.phone }));
+    } else {
+      setMemberLookup("not_found");
+    }
+  };
+
   const subtotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
   const deliveryFee = (appliedPromo?.type === "free_delivery" || subtotal >= FREE_THRESHOLD) ? 0 : DELIVERY_FEE;
   const promoDiscount = appliedPromo ? calcDiscount(appliedPromo, subtotal) : 0;
@@ -333,6 +359,9 @@ export default function CartDrawer({ cart, isOpen, onClose, onUpdate, onClearCar
         setGcInput("");
         setGcCard(null);
         setGcError("");
+        setCheckoutMode("unset");
+        setMemberPhone("");
+        setMemberLookup(null);
       }
     }, 350);
   };
@@ -473,7 +502,7 @@ export default function CartDrawer({ cart, isOpen, onClose, onUpdate, onClearCar
             <div className="flex items-center justify-between px-6 py-5 border-b border-[#3B1F0A]/10 shrink-0">
               <div className="flex items-center gap-3">
                 <button
-                  onClick={() => setStep("cart")}
+                  onClick={() => { setStep("cart"); setCheckoutMode("unset"); setMemberPhone(""); setMemberLookup(null); }}
                   className="text-[#3B1F0A]/45 hover:text-[#3B1F0A] transition-colors"
                 >
                   <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -491,6 +520,65 @@ export default function CartDrawer({ cart, isOpen, onClose, onUpdate, onClearCar
               </button>
             </div>
 
+            {/* ── Mode selector ── */}
+            {checkoutMode === "unset" && (
+              <div className="flex-1 flex flex-col px-6 py-6 space-y-5">
+                {/* Order mini-summary */}
+                <div className="bg-white border border-[#3B1F0A]/8 p-4">
+                  <p className="text-[11px] font-semibold text-[#3B1F0A]/45 tracking-widest uppercase mb-2">Order Summary</p>
+                  {cart.map((i) => (
+                    <div key={i.name} className="flex justify-between text-sm py-0.5">
+                      <span className="text-[#3B1F0A]">{i.name} <span className="text-[#3B1F0A]/35">×{i.quantity}</span></span>
+                      <span className="font-medium text-[#3B1F0A]">{fmt(i.price * i.quantity)}</span>
+                    </div>
+                  ))}
+                  <div className="border-t border-[#3B1F0A]/8 mt-2 pt-2 flex justify-between font-bold text-[#3B1F0A]" style={{ fontFamily: "var(--font-playfair), serif" }}>
+                    <span>Total</span><span>{fmt(total)}</span>
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-[11px] font-semibold text-[#3B1F0A]/45 tracking-widest uppercase mb-3">How would you like to continue?</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    {/* Member option */}
+                    <button
+                      onClick={() => setCheckoutMode("member")}
+                      className="flex flex-col items-center gap-3 p-5 border-2 border-[#3B1F0A]/10 bg-white hover:border-[#C8820A] hover:bg-[#FFF8EC] transition-all group"
+                    >
+                      <div className="w-12 h-12 rounded-full bg-[#FFF8EC] border-2 border-[#C8820A]/30 flex items-center justify-center group-hover:border-[#C8820A] transition-all">
+                        <svg width="22" height="22" fill="none" stroke="#C8820A" strokeWidth="1.6" viewBox="0 0 24 24">
+                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </div>
+                      <div className="text-center">
+                        <p className="font-bold text-[#3B1F0A] text-sm">Member</p>
+                        <p className="text-[10px] text-[#3B1F0A]/45 mt-0.5 leading-tight">Sign in with phone<br />to earn & redeem stars</p>
+                      </div>
+                    </button>
+
+                    {/* Anonymous option */}
+                    <button
+                      onClick={() => setCheckoutMode("anonymous")}
+                      className="flex flex-col items-center gap-3 p-5 border-2 border-[#3B1F0A]/10 bg-white hover:border-[#3B1F0A]/35 transition-all group"
+                    >
+                      <div className="w-12 h-12 rounded-full bg-[#3B1F0A]/5 border-2 border-[#3B1F0A]/12 flex items-center justify-center group-hover:border-[#3B1F0A]/25 transition-all">
+                        <svg width="22" height="22" fill="none" stroke="#3B1F0A" strokeWidth="1.6" viewBox="0 0 24 24" className="opacity-50">
+                          <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" strokeLinecap="round" strokeLinejoin="round" />
+                          <circle cx="12" cy="7" r="4" />
+                        </svg>
+                      </div>
+                      <div className="text-center">
+                        <p className="font-bold text-[#3B1F0A] text-sm">Anonymous</p>
+                        <p className="text-[10px] text-[#3B1F0A]/45 mt-0.5 leading-tight">Enter details manually<br />without an account</p>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ── Member or Anonymous flow ── */}
+            {checkoutMode !== "unset" && (
             <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
               {/* Order mini-summary */}
               <div className="bg-white border border-[#3B1F0A]/8 p-4">
@@ -512,36 +600,132 @@ export default function CartDrawer({ cart, isOpen, onClose, onUpdate, onClearCar
                 </div>
               </div>
 
+              {/* Member lookup panel */}
+              {checkoutMode === "member" && (
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-[11px] font-semibold text-[#3B1F0A]/45 tracking-widest uppercase">Member Lookup</p>
+                    <button onClick={() => { setCheckoutMode("unset"); setMemberPhone(""); setMemberLookup(null); setForm(f => ({ ...f, name: "", phone: "" })); }}
+                      className="text-[10px] text-[#3B1F0A]/40 hover:text-[#3B1F0A] font-semibold transition-colors">
+                      Change type
+                    </button>
+                  </div>
+                  <div className="bg-[#FFF8EC] border border-[#C8820A]/25 p-4 space-y-3">
+                    <div className="flex gap-2">
+                      <input
+                        type="tel"
+                        value={memberPhone}
+                        onChange={(e) => { setMemberPhone(e.target.value); setMemberLookup(null); setForm(f => ({ ...f, name: "", phone: "" })); }}
+                        onKeyDown={(e) => e.key === "Enter" && lookupMember()}
+                        placeholder="Enter your phone number"
+                        maxLength={11}
+                        className="flex-1 border border-[#3B1F0A]/15 px-3.5 py-2.5 text-sm text-[#3B1F0A] bg-white placeholder-[#3B1F0A]/30 outline-none focus:border-[#C8820A] transition-colors font-mono tracking-wider"
+                      />
+                      <button onClick={lookupMember}
+                        className="bg-[#C8820A] text-white px-4 py-2.5 text-xs font-bold tracking-wide hover:bg-[#3B1F0A] transition-colors shrink-0">
+                        Look Up
+                      </button>
+                    </div>
+
+                    {memberLookup === "not_found" && (
+                      <div className="flex items-start gap-2 text-xs text-red-600">
+                        <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="shrink-0 mt-0.5">
+                          <circle cx="12" cy="12" r="10" /><path d="M12 8v4M12 16h.01" strokeLinecap="round" />
+                        </svg>
+                        <span>
+                          No member found with this phone number.{" "}
+                          <button onClick={() => { setCheckoutMode("anonymous"); setMemberPhone(""); setMemberLookup(null); }}
+                            className="underline font-semibold hover:text-red-700">Continue as Anonymous</button>
+                        </span>
+                      </div>
+                    )}
+
+                    {memberLookup && memberLookup !== "not_found" && (() => {
+                      const tc = TIER_COLORS[memberLookup.tier] ?? TIER_COLORS.Bronze;
+                      return (
+                        <div className="flex items-center gap-3 bg-white border px-3.5 py-3" style={{ borderColor: tc.border }}>
+                          <div className="w-9 h-9 flex items-center justify-center text-sm font-black shrink-0"
+                            style={{ background: tc.bg, color: tc.text }}>
+                            ★
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-bold text-[#3B1F0A] text-sm leading-tight">{memberLookup.name}</p>
+                            <p className="text-[10px] mt-0.5" style={{ color: tc.text }}>
+                              {memberLookup.tier} · {memberLookup.starsBalance.toLocaleString()} ★ balance
+                            </p>
+                          </div>
+                          <svg width="16" height="16" fill="none" stroke="#16a34a" strokeWidth="2.5" viewBox="0 0 24 24" className="shrink-0">
+                            <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </div>
+              )}
+
               {/* Delivery form */}
               <div>
-                <p className="text-[11px] font-semibold text-[#3B1F0A]/45 tracking-widest uppercase mb-3">Delivery Details</p>
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-[11px] font-semibold text-[#3B1F0A]/45 tracking-widest uppercase">Delivery Details</p>
+                  {checkoutMode === "anonymous" && (
+                    <button onClick={() => { setCheckoutMode("unset"); setForm(f => ({ ...f, name: "", phone: "" })); }}
+                      className="text-[10px] text-[#3B1F0A]/40 hover:text-[#3B1F0A] font-semibold transition-colors">
+                      Change type
+                    </button>
+                  )}
+                </div>
                 <div className="space-y-3">
-                  <div>
-                    <label className="block text-sm font-medium text-[#3B1F0A] mb-1.5">
-                      Full Name <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={form.name}
-                      onChange={(e) => { setForm((f) => ({ ...f, name: e.target.value })); setErrors((e2) => ({ ...e2, name: "" })); }}
-                      placeholder="Nguyễn Văn A"
-                      className={`w-full border px-4 py-3 text-sm text-[#3B1F0A] bg-white placeholder-[#3B1F0A]/25 outline-none focus:border-[#C8820A] transition-colors ${errors.name ? "border-red-400" : "border-[#3B1F0A]/15"}`}
-                    />
-                    {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-[#3B1F0A] mb-1.5">
-                      Phone Number <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="tel"
-                      value={form.phone}
-                      onChange={(e) => { setForm((f) => ({ ...f, phone: e.target.value })); setErrors((e2) => ({ ...e2, phone: "" })); }}
-                      placeholder="0901 234 567"
-                      className={`w-full border px-4 py-3 text-sm text-[#3B1F0A] bg-white placeholder-[#3B1F0A]/25 outline-none focus:border-[#C8820A] transition-colors ${errors.phone ? "border-red-400" : "border-[#3B1F0A]/15"}`}
-                    />
-                    {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
-                  </div>
+                  {/* Name — read-only for verified member, editable for anonymous */}
+                  {checkoutMode === "member" && memberLookup && memberLookup !== "not_found" ? (
+                    <div>
+                      <label className="block text-sm font-medium text-[#3B1F0A] mb-1.5">Full Name</label>
+                      <div className="flex items-center gap-2 border border-[#C8820A]/30 bg-[#FFF8EC] px-4 py-3">
+                        <span className="flex-1 text-sm font-semibold text-[#3B1F0A]">{memberLookup.name}</span>
+                        <span className="text-[10px] text-[#C8820A] font-bold tracking-wide bg-[#C8820A]/10 px-2 py-0.5">VERIFIED</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <label className="block text-sm font-medium text-[#3B1F0A] mb-1.5">
+                        Full Name <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={form.name}
+                        onChange={(e) => { setForm((f) => ({ ...f, name: e.target.value })); setErrors((e2) => ({ ...e2, name: "" })); }}
+                        placeholder="Nguyễn Văn A"
+                        className={`w-full border px-4 py-3 text-sm text-[#3B1F0A] bg-white placeholder-[#3B1F0A]/25 outline-none focus:border-[#C8820A] transition-colors ${errors.name ? "border-red-400" : "border-[#3B1F0A]/15"}`}
+                      />
+                      {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+                    </div>
+                  )}
+
+                  {/* Phone — read-only for verified member, editable for anonymous */}
+                  {checkoutMode === "member" && memberLookup && memberLookup !== "not_found" ? (
+                    <div>
+                      <label className="block text-sm font-medium text-[#3B1F0A] mb-1.5">Phone Number</label>
+                      <div className="flex items-center gap-2 border border-[#C8820A]/30 bg-[#FFF8EC] px-4 py-3">
+                        <span className="flex-1 text-sm font-mono text-[#3B1F0A]/70 tracking-wide">{memberLookup.phone}</span>
+                        <span className="text-[10px] text-[#C8820A] font-bold tracking-wide bg-[#C8820A]/10 px-2 py-0.5">MEMBER</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <label className="block text-sm font-medium text-[#3B1F0A] mb-1.5">
+                        Phone Number <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="tel"
+                        value={form.phone}
+                        onChange={(e) => { setForm((f) => ({ ...f, phone: e.target.value })); setErrors((e2) => ({ ...e2, phone: "" })); }}
+                        placeholder="0901 234 567"
+                        className={`w-full border px-4 py-3 text-sm text-[#3B1F0A] bg-white placeholder-[#3B1F0A]/25 outline-none focus:border-[#C8820A] transition-colors ${errors.phone ? "border-red-400" : "border-[#3B1F0A]/15"}`}
+                      />
+                      {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
+                    </div>
+                  )}
+
                   <div>
                     <label className="block text-sm font-medium text-[#3B1F0A] mb-1.5">
                       Delivery Address <span className="text-red-500">*</span>
@@ -709,7 +893,9 @@ export default function CartDrawer({ cart, isOpen, onClose, onUpdate, onClearCar
                 )}
               </div>
             </div>
+            )}
 
+            {checkoutMode !== "unset" && (
             <div className="px-6 py-5 border-t border-[#3B1F0A]/10 bg-white shrink-0">
               <div className="flex justify-between text-sm mb-3">
                 <span className="text-[#3B1F0A]/55">
@@ -736,6 +922,7 @@ export default function CartDrawer({ cart, isOpen, onClose, onUpdate, onClearCar
                 )}
               </button>
             </div>
+            )}
           </>
         )}
 

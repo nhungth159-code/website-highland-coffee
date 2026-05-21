@@ -1119,11 +1119,11 @@ export default function AdminLoyaltyPage() {
                 )}
               </div>
             ) : (
-              <div className="bg-white border border-[#3B1F0A]/8 overflow-hidden">
+              <div className="bg-white border border-[#3B1F0A]/8 overflow-x-auto">
                 {/* Table header */}
-                <div className="hidden sm:grid grid-cols-[1fr_140px_110px_100px_110px_120px] gap-4 px-5 py-2.5 border-b border-[#3B1F0A]/8 bg-[#FAF6EF]/60">
-                  {["Customer", "Phone", "Tier", "Stars", "Orders", "Last Active"].map(h => (
-                    <p key={h} className="text-[10px] font-bold text-[#3B1F0A]/40 uppercase tracking-wider">{h}</p>
+                <div className="hidden sm:grid grid-cols-[1fr_128px_80px_105px_60px_88px_100px] gap-3 px-5 py-2.5 border-b border-[#3B1F0A]/8 bg-[#FAF6EF]/60 min-w-[760px]">
+                  {["Customer", "Phone", "Tier", "Stars", "Orders", "Last Active", ""].map((h, idx) => (
+                    <p key={idx} className="text-[10px] font-bold text-[#3B1F0A]/40 uppercase tracking-wider">{h}</p>
                   ))}
                 </div>
 
@@ -1131,7 +1131,7 @@ export default function AdminLoyaltyPage() {
                   const c = TIER_STYLE[customer.tier];
                   return (
                     <div key={customer.id}
-                      className={`grid sm:grid-cols-[1fr_140px_110px_100px_110px_120px] gap-4 px-5 py-4 items-center hover:bg-[#FAF6EF]/40 transition-colors ${i > 0 ? "border-t border-[#3B1F0A]/6" : ""}`}>
+                      className={`grid sm:grid-cols-[1fr_128px_80px_105px_60px_88px_100px] gap-3 px-5 py-3.5 items-center hover:bg-[#FAF6EF]/40 transition-colors min-w-[760px] ${i > 0 ? "border-t border-[#3B1F0A]/6" : ""}`}>
                       <div className="flex items-center gap-3 min-w-0">
                         <div className={`w-8 h-8 flex items-center justify-center text-xs font-black shrink-0 ${c.bg} ${c.text}`}>
                           {customer.name.charAt(0)}
@@ -1141,23 +1141,36 @@ export default function AdminLoyaltyPage() {
                           {customer.email && <p className="text-[10px] text-[#3B1F0A]/40 truncate">{customer.email}</p>}
                         </div>
                       </div>
-                      <p className="text-sm font-mono text-[#3B1F0A]/70 hidden sm:block">{customer.phone}</p>
-                      <span className={`text-[10px] font-bold px-2 py-1 self-start sm:self-center ${c.badge} hidden sm:inline`}>{customer.tier}</span>
+                      <p className="text-xs font-mono text-[#3B1F0A]/65 hidden sm:block tracking-tight">{customer.phone}</p>
+                      <span className={`text-[10px] font-bold px-2 py-1 self-center w-fit ${c.badge} hidden sm:inline-block`}>{customer.tier}</span>
                       <div className="hidden sm:block">
                         <p className={`text-sm font-bold ${c.star}`}>{customer.starsBalance.toLocaleString()} ★</p>
                         <p className="text-[10px] text-[#3B1F0A]/35">{customer.starsEarned.toLocaleString()} earned</p>
                       </div>
                       <p className="text-sm text-[#3B1F0A]/60 hidden sm:block">{customer.orderCount}</p>
-                      <div className="flex items-center justify-between sm:justify-start gap-2">
-                        <p className="text-xs text-[#3B1F0A]/40 hidden sm:block">{timeAgo(customer.lastActivity)}</p>
-                        <div className="flex gap-1 sm:ml-auto">
-                          <button onClick={() => setCustDetail(customer)}
-                            className="text-[#3B1F0A]/40 hover:text-[#C8820A] text-xs font-semibold transition-colors px-2 py-1">View</button>
-                          <button onClick={() => { setCustError(""); setCustModal({ open: true, data: { id: customer.id, name: customer.name, phone: customer.phone, email: customer.email } }); }}
-                            className="text-[#3B1F0A]/40 hover:text-[#3B1F0A] text-xs font-semibold transition-colors px-2 py-1">Edit</button>
-                          <button onClick={() => setDeleteCustId(customer.id)}
-                            className="text-[#3B1F0A]/25 hover:text-red-500 text-xs font-semibold transition-colors px-2 py-1">Delete</button>
-                        </div>
+                      <p className="text-xs text-[#3B1F0A]/45 hidden sm:block leading-tight">{timeAgo(customer.lastActivity)}</p>
+                      <div className="flex items-center gap-0.5 shrink-0">
+                        <button onClick={() => setCustDetail(customer)} title="View details"
+                          className="w-8 h-8 flex items-center justify-center text-[#3B1F0A]/35 hover:text-[#C8820A] hover:bg-[#C8820A]/8 transition-colors rounded-sm">
+                          <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" strokeLinecap="round" strokeLinejoin="round" />
+                            <circle cx="12" cy="12" r="3" />
+                          </svg>
+                        </button>
+                        <button onClick={() => { setCustError(""); setCustModal({ open: true, data: { id: customer.id, name: customer.name, phone: customer.phone, email: customer.email } }); }} title="Edit customer"
+                          className="w-8 h-8 flex items-center justify-center text-[#3B1F0A]/35 hover:text-[#3B1F0A] hover:bg-[#3B1F0A]/8 transition-colors rounded-sm">
+                          <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+                            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" strokeLinecap="round" strokeLinejoin="round" />
+                            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        </button>
+                        <button onClick={() => setDeleteCustId(customer.id)} title="Delete customer"
+                          className="w-8 h-8 flex items-center justify-center text-[#3B1F0A]/25 hover:text-red-500 hover:bg-red-50 transition-colors rounded-sm">
+                          <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+                            <polyline points="3 6 5 6 21 6" strokeLinecap="round" strokeLinejoin="round" />
+                            <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        </button>
                       </div>
                     </div>
                   );
