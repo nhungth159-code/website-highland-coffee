@@ -38,6 +38,14 @@ const TYPE_OPTIONS: { value: PromoType; label: string; desc: string }[] = [
   { value: "free_delivery", label: "Free Delivery",       desc: "Waive delivery fee"    },
 ];
 
+function localDateString(): string {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
 const EMPTY_FORM = {
   name: "",
   code: "",
@@ -45,7 +53,7 @@ const EMPTY_FORM = {
   type: "percent" as PromoType,
   value: 25,
   minPurchase: 0,
-  startDate: new Date().toISOString().slice(0, 10),
+  startDate: localDateString(),
   endDate: "",
   maxUses: 0,
   isActive: true,
@@ -565,15 +573,17 @@ export default function AdminPromotionsPage() {
                         </svg>
                         Edit
                       </button>
-                      <button onClick={() => handleToggle(p.id)}
-                        className={`flex items-center gap-1.5 text-xs font-semibold transition-colors px-2 py-1 ${p.isActive ? "text-amber-600 hover:text-amber-700" : "text-emerald-600 hover:text-emerald-700"}`}>
-                        <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                          {p.isActive
-                            ? <path d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
-                            : <path d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />}
-                        </svg>
-                        {p.isActive ? "Pause" : "Resume"}
-                      </button>
+                      {status !== "expired" && status !== "exhausted" && (
+                        <button onClick={() => handleToggle(p.id)}
+                          className={`flex items-center gap-1.5 text-xs font-semibold transition-colors px-2 py-1 ${p.isActive ? "text-amber-600 hover:text-amber-700" : "text-emerald-600 hover:text-emerald-700"}`}>
+                          <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            {p.isActive
+                              ? <path d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />
+                              : <path d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z M21 12a9 9 0 11-18 0 9 9 0 0118 0z" strokeLinecap="round" strokeLinejoin="round" />}
+                          </svg>
+                          {p.isActive ? "Pause" : "Resume"}
+                        </button>
+                      )}
                       <button onClick={() => setDeleteId(p.id)}
                         className="flex items-center gap-1.5 text-[#3B1F0A]/30 hover:text-red-500 text-xs font-semibold transition-colors px-2 py-1">
                         <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">

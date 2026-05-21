@@ -82,12 +82,23 @@ export function getPromotions(): Promotion[] {
   return load();
 }
 
+/** Returns today's date as YYYY-MM-DD in the local timezone (not UTC). */
+function localToday(): string {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
 export function getPromoStatus(p: Promotion): PromoStatus {
-  const today = new Date().toISOString().slice(0, 10);
-  if (!p.isActive) return "paused";
+  const today = localToday();
+  // Date-based states take absolute precedence — they cannot be overridden by isActive.
+  if (p.endDate && today > p.endDate) return "expired";
   if (p.maxUses > 0 && p.usedCount >= p.maxUses) return "exhausted";
+  // Admin-managed states (only apply when within valid date range).
+  if (!p.isActive) return "paused";
   if (today < p.startDate) return "scheduled";
-  if (today > p.endDate) return "expired";
   return "active";
 }
 
