@@ -3,8 +3,9 @@
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { getOrders, updateOrderStatus } from "@/lib/orders";
+import { getOrders, updateOrderStatus, updateOrderFields } from "@/lib/orders";
 import type { StoredOrder, OrderStatus } from "@/lib/orders";
+import { findCustomerByPhone, addPurchaseStars, getTiers, getConfig, calculateStarsForPurchase } from "@/lib/loyalty";
 
 // ── Status config ────────────────────────────────────────────
 const STATUS_CONFIG: Record<
@@ -55,7 +56,27 @@ export default function AdminPage() {
 
   const advance = (order: StoredOrder) => {
     const next = STATUS_CONFIG[order.status].next;
-    if (next) handleStatusChange(order.id, next);
+    if (!next) return;
+
+    handleStatusChange(order.id, next);
+
+    // Auto-credit loyalty stars when order is marked delivered
+    if (next === "delivered" && !order.loyaltyStarsAdded) {
+      const phone = order.customer.phone.replace(/\s/g, "");
+      const customer = findCustomerByPhone(phone);
+      if (customer) {
+        const tiers = getTiers();
+        const config = getConfig();
+        const tierInfo = tiers.find((t) => t.name === customer.tier);
+        const stars = calculateStarsForPurchase(order.total, tierInfo?.multiplier ?? 1, config.starsPerTenThousand);
+        addPurchaseStars(customer.id, order.total, tiers, config);
+        setOrders(updateOrderFields(order.id, {
+          status: "delivered",
+          loyaltyStarsAdded: true,
+          loyaltyStarsAmount: stars,
+        }));
+      }
+    }
   };
 
   const cancel = (order: StoredOrder) => {
@@ -300,11 +321,22 @@ export default function AdminPage() {
                         >
                           {cfg.label}
                         </span>
+                        {order.loyaltyStarsAdded && order.loyaltyStarsAmount !== undefined && (
+                          <span className="flex items-center gap-1 text-[10px] font-bold text-[#C8820A] bg-[#FFF8EC] border border-[#C8820A]/30 px-2 py-0.5">
+                            ★ +{order.loyaltyStarsAmount} stars credited
+                          </span>
+                        )}
                       </div>
                       <div className="flex items-center gap-3 mt-1 text-xs text-[#3B1F0A]/45">
                         <span>{order.customer.name}</span>
                         <span>·</span>
                         <span>{order.customer.phone}</span>
+                        {order.loyaltyCustomerId && (
+                          <>
+                            <span>·</span>
+                            <span className="text-[#C8820A] font-semibold">★ Member</span>
+                          </>
+                        )}
                         <span>·</span>
                         <span>{timeAgo(order.createdAt)}</span>
                       </div>
@@ -423,8 +455,43 @@ export default function AdminPage() {
                       )}
 
                       {(order.status === "delivered" || order.status === "cancelled") && (
-                        <div className={`text-center py-2.5 text-sm font-semibold ${cfg.color} ${cfg.bg} border`}>
-                          {order.status === "delivered" ? "✓ Order completed" : "✕ Order cancelled"}
+                        <div className="space-y-2">
+                          <div className={`text-center py-2.5 text-sm font-semibold ${cfg.color} ${cfg.bg} border`}>
+                            {order.status === "delivered" ? "✓ Order completed" : "✕ Order cancelled"}
+                          </div>
+                          {order.status === "delivered" && order.loyaltyStarsAdded && order.loyaltyStarsAmount !== undefined && (
+                            <div className="flex items-center justify-center gap-2 py-2 bg-[#FFF8EC] border border-[#C8820A]/25 text-xs font-semibold text-[#C8820A]">
+                              <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" strokeLinecap="round" strokeLinejoin="round" />
+                              </svg>
+                              {order.loyaltyStarsAmount} loyalty stars credited to {order.customer.name}
+                            </div>
+                          )}
+                          {order.status === "delivered" && !order.loyaltyStarsAdded && (
+                            (() => {
+                              const customer = findCustomerByPhone(order.customer.phone.replace(/\s/g, ""));
+                              if (!customer) return null;
+                              return (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    const tiers = getTiers();
+                                    const config = getConfig();
+                                    const tierInfo = tiers.find((t) => t.name === customer.tier);
+                                    const stars = calculateStarsForPurchase(order.total, tierInfo?.multiplier ?? 1, config.starsPerTenThousand);
+                                    addPurchaseStars(customer.id, order.total, tiers, config);
+                                    setOrders(updateOrderFields(order.id, { loyaltyStarsAdded: true, loyaltyStarsAmount: stars }));
+                                  }}
+                                  className="w-full flex items-center justify-center gap-2 py-2.5 bg-[#C8820A] text-white text-xs font-bold hover:bg-[#3B1F0A] transition-colors"
+                                >
+                                  <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" strokeLinecap="round" strokeLinejoin="round" />
+                                  </svg>
+                                  Credit loyalty stars to {customer.name} (member found)
+                                </button>
+                              );
+                            })()
+                          )}
                         </div>
                       )}
                     </div>

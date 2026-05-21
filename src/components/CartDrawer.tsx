@@ -330,6 +330,9 @@ export default function CartDrawer({ cart, isOpen, onClose, onUpdate, onClearCar
       total,
       status: "pending",
       paymentMethod: paymentMethod === "giftcard" ? `Gift Card (${gcInput.trim().toUpperCase()})` : selectedMethod.label,
+      ...(checkoutMode === "member" && memberLookup && memberLookup !== "not_found"
+        ? { loyaltyCustomerId: memberLookup.id }
+        : {}),
     });
 
     if (paymentMethod === "giftcard" && gcCard && gcCard !== "not_found") {

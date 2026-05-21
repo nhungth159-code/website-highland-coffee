@@ -26,6 +26,9 @@ export interface StoredOrder {
   total: number;
   status: OrderStatus;
   paymentMethod?: string;
+  loyaltyCustomerId?: string;  // set when placed via member checkout
+  loyaltyStarsAdded?: boolean; // true once stars are credited on delivery
+  loyaltyStarsAmount?: number; // stars credited (for display)
 }
 
 const KEY = "highlands_orders";
@@ -47,6 +50,12 @@ export const getOrders = (): StoredOrder[] => {
 
 export const updateOrderStatus = (id: string, status: OrderStatus): StoredOrder[] => {
   const orders = getOrders().map((o) => (o.id === id ? { ...o, status } : o));
+  localStorage.setItem(KEY, JSON.stringify(orders));
+  return orders;
+};
+
+export const updateOrderFields = (id: string, patch: Partial<StoredOrder>): StoredOrder[] => {
+  const orders = getOrders().map((o) => (o.id === id ? { ...o, ...patch } : o));
   localStorage.setItem(KEY, JSON.stringify(orders));
   return orders;
 };
