@@ -924,35 +924,35 @@ export default function CartDrawer({ cart, isOpen, onClose, onUpdate, onClearCar
                   </div>
                 )}
               </div>
-            </div>
-            )}
 
-            {checkoutMode !== "unset" && (
-            <div className="px-6 pt-5 pb-[max(20px,env(safe-area-inset-bottom))] border-t border-[#3B1F0A]/10 bg-white shrink-0">
-              <div className="flex justify-between text-sm mb-3">
-                <span className="text-[#3B1F0A]/55">
-                  Total · <span style={{ color: selectedMethod.accent }} className="font-semibold">{selectedMethod.label}</span>
-                </span>
-                <span className="font-bold text-[#3B1F0A]">{fmt(total)}</span>
+              {/* Pay button is inside the scroll so it is always reachable on mobile
+                  regardless of iOS toolbar height or keyboard state */}
+              <div className="pt-5 pb-6 border-t border-[#3B1F0A]/10">
+                <div className="flex justify-between text-sm mb-3">
+                  <span className="text-[#3B1F0A]/55">
+                    Total · <span style={{ color: selectedMethod.accent }} className="font-semibold">{selectedMethod.label}</span>
+                  </span>
+                  <span className="font-bold text-[#3B1F0A]">{fmt(total)}</span>
+                </div>
+                <button
+                  onClick={handlePlaceOrder}
+                  disabled={loading}
+                  className="w-full text-white py-3.5 font-bold tracking-wider text-sm transition-colors disabled:opacity-60 flex items-center justify-center gap-2 active:opacity-80 touch-manipulation"
+                  style={{ background: loading ? "#3B1F0A" : selectedMethod.accent }}
+                >
+                  {loading ? (
+                    <>
+                      <svg className="animate-spin" width="16" height="16" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="white" strokeWidth="4" />
+                        <path className="opacity-75" fill="white" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                      Placing order...
+                    </>
+                  ) : (
+                    `Pay with ${selectedMethod.label}`
+                  )}
+                </button>
               </div>
-              <button
-                onClick={handlePlaceOrder}
-                disabled={loading}
-                className="w-full text-white py-3.5 font-bold tracking-wider text-sm transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
-                style={{ background: loading ? "#3B1F0A" : selectedMethod.accent }}
-              >
-                {loading ? (
-                  <>
-                    <svg className="animate-spin" width="16" height="16" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="white" strokeWidth="4" />
-                      <path className="opacity-75" fill="white" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                    </svg>
-                    Placing order...
-                  </>
-                ) : (
-                  `Pay with ${selectedMethod.label}`
-                )}
-              </button>
             </div>
             )}
           </>
