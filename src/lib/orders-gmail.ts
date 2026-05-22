@@ -4,7 +4,7 @@ import { simpleParser } from "mailparser";
 import type { StoredOrder } from "./orders";
 
 export const SUBJECT_TAG = "[HC-ORDER]";
-const IMAP_TIMEOUT_MS = 12_000;
+const IMAP_TIMEOUT_MS = 20_000;
 
 export async function sendOrderEmail(order: StoredOrder): Promise<void> {
   const { GMAIL_USER, GMAIL_APP_PASSWORD } = process.env;
@@ -46,15 +46,17 @@ export async function fetchOrdersFromGmail(): Promise<StoredOrder[]> {
   const fetch = async (): Promise<StoredOrder[]> => {
     try {
       await client.connect();
-      const lock = await client.getMailboxLock("INBOX");
+      // Search All Mail so we find orders regardless of whether Gmail put them in
+      // Inbox, Sent, Spam, or Promotions — cloud IPs often trigger spam filters.
+      const lock = await client.getMailboxLock("[Gmail]/All Mail");
 
       try {
         const since = new Date();
         since.setDate(since.getDate() - 90);
 
-        // Self-sent order emails sent from the admin Gmail account to itself
+        // Match by subject tag — more reliable than from-address matching
         const uids = await client.search(
-          { since, from: GMAIL_USER },
+          { since, subject: SUBJECT_TAG },
           { uid: true }
         );
 

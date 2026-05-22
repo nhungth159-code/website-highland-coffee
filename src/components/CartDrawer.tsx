@@ -389,7 +389,7 @@ export default function CartDrawer({ cart, isOpen, onClose, onUpdate, onClearCar
 
       {/* Drawer panel */}
       <div
-        className={`fixed right-0 top-0 h-full w-full max-w-[420px] bg-[#FAF6EF] z-50 flex flex-col shadow-2xl transition-transform duration-300 ease-in-out ${
+        className={`fixed right-0 top-0 h-[100dvh] w-full max-w-[420px] bg-[#FAF6EF] z-50 flex flex-col shadow-2xl transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
@@ -490,7 +490,7 @@ export default function CartDrawer({ cart, isOpen, onClose, onUpdate, onClearCar
             </div>
 
             {cart.length > 0 && (
-              <div className="px-6 py-5 border-t border-[#3B1F0A]/10 bg-white shrink-0">
+              <div className="px-6 pt-5 pb-[max(20px,env(safe-area-inset-bottom))] border-t border-[#3B1F0A]/10 bg-white shrink-0">
                 <div className="space-y-1.5 text-sm mb-4">
                   <div className="flex justify-between text-[#3B1F0A]/55">
                     <span>Subtotal</span><span>{fmt(subtotal)}</span>
@@ -928,7 +928,7 @@ export default function CartDrawer({ cart, isOpen, onClose, onUpdate, onClearCar
             )}
 
             {checkoutMode !== "unset" && (
-            <div className="px-6 py-5 border-t border-[#3B1F0A]/10 bg-white shrink-0">
+            <div className="px-6 pt-5 pb-[max(20px,env(safe-area-inset-bottom))] border-t border-[#3B1F0A]/10 bg-white shrink-0">
               <div className="flex justify-between text-sm mb-3">
                 <span className="text-[#3B1F0A]/55">
                   Total · <span style={{ color: selectedMethod.accent }} className="font-semibold">{selectedMethod.label}</span>
