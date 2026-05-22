@@ -40,18 +40,42 @@ export default function AdminPage() {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
 
+  // Merge server orders (cross-device) with local orders, deduplicate, sort newest first.
+  const loadOrders = async () => {
+    const local = getOrders();
+    try {
+      const res = await fetch("/api/orders");
+      const server: StoredOrder[] = await res.json();
+      if (server.length > 0) {
+        const merged = [...server];
+        for (const lo of local) {
+          if (!merged.find((o) => o.id === lo.id)) merged.push(lo);
+        }
+        merged.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        localStorage.setItem("highlands_orders", JSON.stringify(merged));
+        return merged;
+      }
+    } catch {}
+    return local;
+  };
+
   useEffect(() => {
-    setOrders(getOrders());
-    setMounted(true);
+    loadOrders().then((o) => { setOrders(o); setMounted(true); });
 
     const onStorage = () => setOrders(getOrders());
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleStatusChange = (id: string, status: OrderStatus) => {
     const updated = updateOrderStatus(id, status);
     setOrders(updated);
+    fetch(`/api/orders/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    }).catch(() => {});
   };
 
   const advance = (order: StoredOrder) => {
@@ -70,11 +94,13 @@ export default function AdminPage() {
         const tierInfo = tiers.find((t) => t.name === customer.tier);
         const stars = calculateStarsForPurchase(order.total, tierInfo?.multiplier ?? 1, config.starsPerTenThousand);
         addPurchaseStars(customer.id, order.total, tiers, config);
-        setOrders(updateOrderFields(order.id, {
-          status: "delivered",
-          loyaltyStarsAdded: true,
-          loyaltyStarsAmount: stars,
-        }));
+        const patch = { status: "delivered" as OrderStatus, loyaltyStarsAdded: true, loyaltyStarsAmount: stars };
+        setOrders(updateOrderFields(order.id, patch));
+        fetch(`/api/orders/${order.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(patch),
+        }).catch(() => {});
       }
     }
   };
@@ -182,7 +208,7 @@ export default function AdminPage() {
           </div>
         </div>
         <button
-          onClick={() => setOrders(getOrders())}
+          onClick={() => loadOrders().then(setOrders)}
           className="flex items-center gap-2 text-white/60 hover:text-white text-xs font-medium transition-colors"
         >
           <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -493,7 +519,9 @@ export default function AdminPage() {
                                     const tierInfo = tiers.find((t) => t.name === customer.tier);
                                     const stars = calculateStarsForPurchase(order.total, tierInfo?.multiplier ?? 1, config.starsPerTenThousand);
                                     addPurchaseStars(customer.id, order.total, tiers, config);
-                                    setOrders(updateOrderFields(order.id, { loyaltyStarsAdded: true, loyaltyStarsAmount: stars }));
+                                    const loyaltyPatch = { loyaltyStarsAdded: true, loyaltyStarsAmount: stars };
+                                    setOrders(updateOrderFields(order.id, loyaltyPatch));
+                                    fetch(`/api/orders/${order.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(loyaltyPatch) }).catch(() => {});
                                   }}
                                   className="w-full flex items-center justify-center gap-2 py-2.5 bg-[#C8820A] text-white text-xs font-bold hover:bg-[#3B1F0A] transition-colors"
                                 >

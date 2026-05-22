@@ -319,7 +319,7 @@ export default function CartDrawer({ cart, isOpen, onClose, onUpdate, onClearCar
     await new Promise((r) => setTimeout(r, 1200));
     const num = `HC-${Math.floor(100000 + Math.random() * 900000)}`;
     setOrderNum(num);
-    saveOrder({
+    const newOrder: Parameters<typeof saveOrder>[0] = {
       id: num,
       createdAt: new Date().toISOString(),
       customer: { name: form.name, phone: form.phone, address: form.address, notes: form.notes },
@@ -333,7 +333,14 @@ export default function CartDrawer({ cart, isOpen, onClose, onUpdate, onClearCar
       ...(checkoutMode === "member" && memberLookup && memberLookup !== "not_found"
         ? { loyaltyCustomerId: memberLookup.id }
         : {}),
-    });
+    };
+    saveOrder(newOrder);
+    // Sync to server so admin can see orders from any device
+    fetch("/api/orders", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newOrder),
+    }).catch(() => {});
 
     if (paymentMethod === "giftcard" && gcCard && gcCard !== "not_found") {
       updateGiftCardBalance(gcCard.code, total);
