@@ -554,7 +554,7 @@ export default function CartDrawer({ cart, isOpen, onClose, onUpdate, onClearCar
 
             {/* ── Mode selector ── */}
             {checkoutMode === "unset" && (
-              <div className="flex-1 flex flex-col px-6 py-6 space-y-5">
+              <div className="flex-1 overflow-y-auto overscroll-contain px-6 py-6 space-y-5">
                 {/* Order mini-summary */}
                 <div className="bg-white border border-[#3B1F0A]/8 p-4">
                   <p className="text-[11px] font-semibold text-[#3B1F0A]/45 tracking-widest uppercase mb-2">Order Summary</p>
