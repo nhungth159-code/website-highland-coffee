@@ -40,27 +40,59 @@ export default function AdminPage() {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
 
-  // Merge server orders (cross-device) with local orders, deduplicate, sort newest first.
+  const [syncing, setSyncing] = useState(false);
+
+  // Merge a server list with local localStorage, deduplicate, sort newest first.
+  const mergeWithLocal = (server: StoredOrder[]) => {
+    const local = getOrders();
+    const merged = [...server];
+    for (const lo of local) {
+      if (!merged.find((o) => o.id === lo.id)) merged.push(lo);
+    }
+    merged.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    localStorage.setItem("highlands_orders", JSON.stringify(merged));
+    return merged;
+  };
+
+  // Fast fetch from in-memory server store (no IMAP, instant).
+  const fetchServerOrders = async () => {
+    const res = await fetch("/api/orders");
+    return res.json() as Promise<StoredOrder[]>;
+  };
+
+  // Slow fetch — connects to Gmail IMAP to pull cross-device orders (~5–12 s).
+  const syncFromGmail = async () => {
+    setSyncing(true);
+    try {
+      const res = await fetch("/api/orders/sync");
+      const synced: StoredOrder[] = await res.json();
+      setOrders(mergeWithLocal(synced));
+    } catch {}
+    setSyncing(false);
+  };
+
   const loadOrders = async () => {
     const local = getOrders();
     try {
-      const res = await fetch("/api/orders");
-      const server: StoredOrder[] = await res.json();
-      if (server.length > 0) {
-        const merged = [...server];
-        for (const lo of local) {
-          if (!merged.find((o) => o.id === lo.id)) merged.push(lo);
-        }
-        merged.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-        localStorage.setItem("highlands_orders", JSON.stringify(merged));
-        return merged;
-      }
+      const server = await fetchServerOrders();
+      return mergeWithLocal(server.length > 0 ? server : local);
     } catch {}
     return local;
   };
 
   useEffect(() => {
-    loadOrders().then((o) => { setOrders(o); setMounted(true); });
+    // 1. Show local orders instantly (no blank screen).
+    const local = getOrders();
+    setOrders(local);
+    setMounted(true);
+
+    // 2. Merge with in-memory server orders (fast, same-device session).
+    fetchServerOrders()
+      .then((server) => { if (server.length > 0) setOrders(mergeWithLocal(server)); })
+      .catch(() => {});
+
+    // 3. Sync from Gmail in background to pull cross-device orders.
+    syncFromGmail();
 
     const onStorage = () => setOrders(getOrders());
     window.addEventListener("storage", onStorage);
@@ -208,14 +240,15 @@ export default function AdminPage() {
           </div>
         </div>
         <button
-          onClick={() => loadOrders().then(setOrders)}
-          className="flex items-center gap-2 text-white/60 hover:text-white text-xs font-medium transition-colors"
+          onClick={() => { loadOrders().then(setOrders); syncFromGmail(); }}
+          disabled={syncing}
+          className="flex items-center gap-2 text-white/60 hover:text-white text-xs font-medium transition-colors disabled:opacity-50"
         >
-          <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className={syncing ? "animate-spin" : ""}>
             <path d="M23 4v6h-6M1 20v-6h6" strokeLinecap="round" strokeLinejoin="round" />
             <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          Refresh
+          {syncing ? "Syncing…" : "Refresh"}
         </button>
       </header>
 
