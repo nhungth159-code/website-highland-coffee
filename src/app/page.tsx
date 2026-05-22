@@ -406,7 +406,7 @@ export default function Home() {
           <div className="flex justify-center mb-10">
             <div className="inline-flex border border-[#3B1F0A]/12 p-1 gap-0.5 bg-white/40">
               {(Object.keys(MENU_DATA) as MenuTab[]).map((tab) => (
-                <button key={tab} onClick={() => setActiveTab(tab)} className={`px-8 py-2.5 text-sm font-semibold tracking-wider transition-all duration-200 ${activeTab === tab ? "bg-[#3B1F0A] text-white" : "text-[#3B1F0A]/55 hover:text-[#3B1F0A]"}`}>
+                <button key={tab} onClick={() => setActiveTab(tab)} className={`px-8 py-2.5 text-sm font-semibold tracking-wider transition-all duration-200 touch-manipulation ${activeTab === tab ? "bg-[#3B1F0A] text-white" : "text-[#3B1F0A]/55 hover:text-[#3B1F0A] active:text-[#3B1F0A]"}`}>
                   {t.menuSec[tab]}
                 </button>
               ))}

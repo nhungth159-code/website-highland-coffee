@@ -226,7 +226,7 @@ export default function StoresPage() {
   };
 
   return (
-    <div className="h-screen bg-[#FAF6EF] flex flex-col overflow-hidden">
+    <div className="min-h-screen lg:h-screen bg-[#FAF6EF] flex flex-col lg:overflow-hidden">
       {/* ── Navbar ── */}
       <header className="sticky top-0 z-40 bg-[#3B1F0A] shadow-lg shrink-0">
         <div className="max-w-full px-6 lg:px-8 h-16 flex items-center gap-6">
@@ -284,10 +284,10 @@ export default function StoresPage() {
                 <button
                   key={city}
                   onClick={() => { setSelectedCity(city); setActiveId(null); }}
-                  className={`px-4 py-3.5 text-sm font-medium whitespace-nowrap border-b-2 transition-all duration-150 ${
+                  className={`px-4 py-3.5 text-sm font-medium whitespace-nowrap border-b-2 transition-all duration-150 touch-manipulation ${
                     selectedCity === city
                       ? "border-[#C8820A] text-[#C8820A]"
-                      : "border-transparent text-white/40 hover:text-white/70"
+                      : "border-transparent text-white/40 hover:text-white/70 active:text-white/70"
                   }`}
                 >
                   {city}
@@ -304,10 +304,10 @@ export default function StoresPage() {
       </div>
 
       {/* ── Split layout: List | Map ── */}
-      <div className="flex flex-col lg:flex-row flex-1 overflow-hidden min-h-0">
+      <div className="flex flex-col lg:flex-row lg:flex-1 lg:overflow-hidden lg:min-h-0">
 
-        {/* List panel */}
-        <div className="lg:w-[420px] shrink-0 overflow-y-auto bg-[#FAF6EF]">
+        {/* List panel — natural flow on mobile, scrollable fixed panel on desktop */}
+        <div className="lg:w-[420px] lg:shrink-0 lg:overflow-y-auto bg-[#FAF6EF]">
           {filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-24 px-8 text-center">
               <div className="text-4xl mb-3">☕</div>
@@ -380,8 +380,8 @@ export default function StoresPage() {
           )}
         </div>
 
-        {/* Map panel */}
-        <div className="flex-1 relative">
+        {/* Map panel — fixed height on mobile, fills remaining space on desktop */}
+        <div className="h-[280px] sm:h-[360px] lg:h-auto lg:flex-1 relative">
           <StoreMap
             stores={mapStores}
             activeId={activeId}

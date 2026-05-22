@@ -222,6 +222,7 @@ export default function CartDrawer({ cart, isOpen, onClose, onUpdate, onClearCar
   const [errors, setErrors] = useState<{ name?: string; phone?: string; address?: string }>({});
   const [loading, setLoading] = useState(false);
   const [orderNum, setOrderNum] = useState("");
+  const [editingQty, setEditingQty] = useState<Record<string, string>>({});
   const [promoInput, setPromoInput] = useState("");
   const [appliedPromo, setAppliedPromo] = useState<Promotion | null>(null);
   const [promoError, setPromoError] = useState("");
@@ -419,7 +420,7 @@ export default function CartDrawer({ cart, isOpen, onClose, onUpdate, onClearCar
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-6 py-4">
+            <div className="flex-1 overflow-y-auto overscroll-contain px-6 py-4">
               {cart.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center gap-4 text-center">
                   <div className="w-16 h-16 rounded-full bg-[#3B1F0A]/5 flex items-center justify-center">
@@ -440,7 +441,7 @@ export default function CartDrawer({ cart, isOpen, onClose, onUpdate, onClearCar
               ) : (
                 <div>
                   {cart.map((item) => (
-                    <div key={item.name} className="flex items-center gap-4 py-4 border-b border-[#3B1F0A]/8 last:border-0">
+                    <div key={item.name} className="flex items-center gap-3 py-4 border-b border-[#3B1F0A]/8 last:border-0">
                       <div className="relative w-14 h-14 shrink-0 overflow-hidden">
                         <Image src={item.img} alt={item.name} fill className="object-cover" sizes="56px" />
                       </div>
@@ -448,17 +449,38 @@ export default function CartDrawer({ cart, isOpen, onClose, onUpdate, onClearCar
                         <p className="font-bold text-[#3B1F0A] text-sm leading-tight" style={{ fontFamily: "var(--font-playfair), serif" }}>
                           {item.name}
                         </p>
-                        <p className="text-[#C8820A] text-sm font-semibold mt-0.5">{fmt(item.price * item.quantity)}</p>
+                        <p className="text-[10px] text-[#3B1F0A]/45 mt-0.5">
+                          {fmt(item.price)} <span className="text-[#3B1F0A]/25">×</span> {item.quantity}
+                        </p>
+                        <p className="text-[#C8820A] text-xs font-semibold">{fmt(item.price * item.quantity)}</p>
                       </div>
-                      <div className="flex items-center gap-1.5 shrink-0">
+                      <div className="flex items-center gap-1 shrink-0">
                         <button
                           onClick={() => onUpdate(item.name, -1)}
-                          className="w-7 h-7 flex items-center justify-center border border-[#3B1F0A]/18 text-[#3B1F0A] hover:bg-[#3B1F0A] hover:text-white transition-colors font-bold"
+                          className="w-7 h-7 flex items-center justify-center border border-[#3B1F0A]/18 text-[#3B1F0A] active:bg-[#3B1F0A] active:text-white hover:bg-[#3B1F0A] hover:text-white transition-colors font-bold touch-manipulation"
                         >−</button>
-                        <span className="w-5 text-center text-sm font-bold text-[#3B1F0A]">{item.quantity}</span>
+                        <input
+                          type="number"
+                          inputMode="numeric"
+                          min={1}
+                          max={99}
+                          value={editingQty[item.name] !== undefined ? editingQty[item.name] : item.quantity}
+                          onChange={(e) => setEditingQty((p) => ({ ...p, [item.name]: e.target.value }))}
+                          onFocus={(e) => { e.target.select(); setEditingQty((p) => ({ ...p, [item.name]: String(item.quantity) })); }}
+                          onBlur={(e) => {
+                            const val = parseInt(e.target.value, 10);
+                            if (!isNaN(val) && val >= 1 && val <= 99) {
+                              const delta = val - item.quantity;
+                              if (delta !== 0) onUpdate(item.name, delta);
+                            }
+                            setEditingQty((p) => { const n = { ...p }; delete n[item.name]; return n; });
+                          }}
+                          onKeyDown={(e) => { if (e.key === "Enter") e.currentTarget.blur(); if (e.key === "Escape") { setEditingQty((p) => { const n = { ...p }; delete n[item.name]; return n; }); } }}
+                          className="w-9 text-center text-sm font-bold text-[#3B1F0A] border border-[#3B1F0A]/20 bg-white outline-none focus:border-[#C8820A] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        />
                         <button
                           onClick={() => onUpdate(item.name, 1)}
-                          className="w-7 h-7 flex items-center justify-center border border-[#3B1F0A]/18 text-[#3B1F0A] hover:bg-[#3B1F0A] hover:text-white transition-colors font-bold"
+                          className="w-7 h-7 flex items-center justify-center border border-[#3B1F0A]/18 text-[#3B1F0A] active:bg-[#3B1F0A] active:text-white hover:bg-[#3B1F0A] hover:text-white transition-colors font-bold touch-manipulation"
                         >+</button>
                       </div>
                     </div>
@@ -538,8 +560,8 @@ export default function CartDrawer({ cart, isOpen, onClose, onUpdate, onClearCar
                   <p className="text-[11px] font-semibold text-[#3B1F0A]/45 tracking-widest uppercase mb-2">Order Summary</p>
                   {cart.map((i) => (
                     <div key={i.name} className="flex justify-between text-sm py-0.5">
-                      <span className="text-[#3B1F0A]">{i.name} <span className="text-[#3B1F0A]/35">×{i.quantity}</span></span>
-                      <span className="font-medium text-[#3B1F0A]">{fmt(i.price * i.quantity)}</span>
+                      <span className="text-[#3B1F0A] leading-tight">{i.name}<br/><span className="text-[10px] text-[#3B1F0A]/40 font-normal">{fmt(i.price)} × {i.quantity}</span></span>
+                      <span className="font-medium text-[#3B1F0A] shrink-0 ml-2">{fmt(i.price * i.quantity)}</span>
                     </div>
                   ))}
                   <div className="border-t border-[#3B1F0A]/8 mt-2 pt-2 flex justify-between font-bold text-[#3B1F0A]" style={{ fontFamily: "var(--font-playfair), serif" }}>
@@ -589,7 +611,7 @@ export default function CartDrawer({ cart, isOpen, onClose, onUpdate, onClearCar
 
             {/* ── Member or Anonymous flow ── */}
             {checkoutMode !== "unset" && (
-            <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+            <div className="flex-1 overflow-y-auto overscroll-contain px-6 py-5 space-y-5">
               {/* Order mini-summary */}
               <div className="bg-white border border-[#3B1F0A]/8 p-4">
                 <p className="text-[11px] font-semibold text-[#3B1F0A]/45 tracking-widest uppercase mb-2">Order Summary</p>

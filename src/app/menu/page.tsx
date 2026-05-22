@@ -321,7 +321,7 @@ export default function MenuPage() {
                           <div className="flex items-center gap-1">
                             <button
                               onClick={() => updateCart(item.name, -1)}
-                              className="w-7 h-7 flex items-center justify-center bg-[#3B1F0A]/8 hover:bg-[#3B1F0A] hover:text-white text-[#3B1F0A] font-bold text-base transition-colors"
+                              className="w-7 h-7 flex items-center justify-center bg-[#3B1F0A]/8 hover:bg-[#3B1F0A] active:bg-[#3B1F0A] hover:text-white active:text-white text-[#3B1F0A] font-bold text-base transition-colors touch-manipulation"
                               aria-label="Remove one"
                             >
                               −
@@ -329,7 +329,7 @@ export default function MenuPage() {
                             <span className="w-6 text-center text-sm font-bold text-[#3B1F0A]">{qty}</span>
                             <button
                               onClick={() => addToCart(item.name, item.price, item.img)}
-                              className="w-7 h-7 flex items-center justify-center bg-[#C8820A] hover:bg-[#3B1F0A] text-white font-bold text-base transition-colors"
+                              className="w-7 h-7 flex items-center justify-center bg-[#C8820A] hover:bg-[#3B1F0A] active:bg-[#3B1F0A] text-white font-bold text-base transition-colors touch-manipulation"
                               aria-label="Add one more"
                             >
                               +
@@ -339,7 +339,7 @@ export default function MenuPage() {
                           /* Add to Cart button — shown when item is not in cart */
                           <button
                             onClick={() => addToCart(item.name, item.price, item.img)}
-                            className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 bg-[#3B1F0A] text-white hover:bg-[#C8820A] transition-colors duration-200"
+                            className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 bg-[#3B1F0A] text-white hover:bg-[#C8820A] active:bg-[#C8820A] transition-colors duration-200 touch-manipulation"
                           >
                             <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                               <path d="M12 5v14M5 12h14" strokeLinecap="round" />

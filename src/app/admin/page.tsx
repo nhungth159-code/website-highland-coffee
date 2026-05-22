@@ -426,7 +426,7 @@ export default function AdminPage() {
                               </div>
                               <div className="flex-1 min-w-0">
                                 <p className="text-sm font-medium text-[#3B1F0A] truncate">{item.name}</p>
-                                <p className="text-xs text-[#3B1F0A]/40">×{item.quantity}</p>
+                                <p className="text-xs text-[#3B1F0A]/40">{fmt(item.price)} × {item.quantity}</p>
                               </div>
                               <p className="text-sm font-semibold text-[#3B1F0A] shrink-0">
                                 {fmt(item.price * item.quantity)}
