@@ -566,12 +566,31 @@ export default function InteractiveReportPage() {
           </Link>
           <p className="text-lg font-bold tracking-widest shrink-0" style={{ fontFamily: "var(--font-playfair), serif" }}>HIGHLANDS</p>
           <span className="text-white/20 shrink-0">|</span>
-          <div className="flex items-center gap-3 text-sm overflow-x-auto">
+          <div className="flex items-center gap-3 text-sm flex-wrap">
             <Link href="/admin" className="text-white/50 hover:text-white transition-colors whitespace-nowrap">Orders</Link>
             <span className="text-white/20">/</span>
-            <Link href="/admin/reports" className="text-white/50 hover:text-white transition-colors whitespace-nowrap">Reports</Link>
+            <Link href="/admin/applications" className="text-white/50 hover:text-white transition-colors whitespace-nowrap">Applications</Link>
             <span className="text-white/20">/</span>
-            <span className="text-white font-semibold whitespace-nowrap">Interactive Explorer</span>
+            <Link href="/admin/contacts" className="text-white/50 hover:text-white transition-colors whitespace-nowrap">Contacts</Link>
+            <span className="text-white/20">/</span>
+            <Link href="/admin/gift-cards" className="text-white/50 hover:text-white transition-colors whitespace-nowrap">Gift Cards</Link>
+            <span className="text-white/20">/</span>
+            <Link href="/admin/promotions" className="text-white/50 hover:text-white transition-colors whitespace-nowrap">Promotions</Link>
+            <span className="text-white/20">/</span>
+            <Link href="/admin/loyalty" className="text-white/50 hover:text-white transition-colors whitespace-nowrap">Loyalty</Link>
+            <span className="text-white/20">/</span>
+            <div className="relative group">
+              <span className="flex items-center gap-1 text-white font-semibold cursor-default select-none whitespace-nowrap">
+                Report
+                <svg width="8" height="4" fill="currentColor" viewBox="0 0 8 4"><path d="M0 0l4 4 4-4H0z"/></svg>
+              </span>
+              <div className="absolute top-full left-0 pt-1.5 hidden group-hover:block z-[60]">
+                <div className="bg-[#1A0D00] border border-white/10 shadow-2xl py-1 min-w-[160px]">
+                  <Link href="/admin/reports" className="block px-4 py-2 text-xs text-white/55 hover:text-white hover:bg-white/5 transition-colors">Dashboard</Link>
+                  <span className="block px-4 py-2 text-xs text-[#C8820A] font-semibold">✓ Interactive Explorer</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-3 shrink-0 ml-4">

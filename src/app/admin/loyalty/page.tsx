@@ -895,7 +895,18 @@ export default function AdminLoyaltyPage() {
               <span className="text-white/20">/</span>
               <span className="text-white font-semibold">Loyalty</span>
               <span className="text-white/20">/</span>
-              <Link href="/admin/reports" className="text-white/50 hover:text-white transition-colors">Reports</Link>
+              <div className="relative group">
+                <span className="flex items-center gap-1 text-white/50 hover:text-white transition-colors cursor-default select-none">
+                  Report
+                  <svg width="8" height="4" fill="currentColor" viewBox="0 0 8 4"><path d="M0 0l4 4 4-4H0z"/></svg>
+                </span>
+                <div className="absolute top-full left-0 pt-1.5 hidden group-hover:block z-[60]">
+                  <div className="bg-[#1A0D00] border border-white/10 shadow-2xl py-1 min-w-[160px]">
+                    <Link href="/admin/reports" className="block px-4 py-2 text-xs text-white/55 hover:text-white hover:bg-white/5 transition-colors">Dashboard</Link>
+                    <Link href="/admin/reports/interactive" className="block px-4 py-2 text-xs text-white/55 hover:text-white hover:bg-white/5 transition-colors">Interactive Explorer</Link>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
