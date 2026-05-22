@@ -420,7 +420,7 @@ export default function CartDrawer({ cart, isOpen, onClose, onUpdate, onClearCar
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto overscroll-contain px-6 py-4">
+            <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-6 py-4">
               {cart.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center gap-4 text-center">
                   <div className="w-16 h-16 rounded-full bg-[#3B1F0A]/5 flex items-center justify-center">
@@ -554,7 +554,7 @@ export default function CartDrawer({ cart, isOpen, onClose, onUpdate, onClearCar
 
             {/* ── Mode selector ── */}
             {checkoutMode === "unset" && (
-              <div className="flex-1 overflow-y-auto overscroll-contain px-6 py-6 space-y-5">
+              <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-6 py-6 space-y-5">
                 {/* Order mini-summary */}
                 <div className="bg-white border border-[#3B1F0A]/8 p-4">
                   <p className="text-[11px] font-semibold text-[#3B1F0A]/45 tracking-widest uppercase mb-2">Order Summary</p>
@@ -611,7 +611,7 @@ export default function CartDrawer({ cart, isOpen, onClose, onUpdate, onClearCar
 
             {/* ── Member or Anonymous flow ── */}
             {checkoutMode !== "unset" && (
-            <div className="flex-1 overflow-y-auto overscroll-contain px-6 py-5 space-y-5">
+            <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-6 py-5 space-y-5">
               {/* Order mini-summary */}
               <div className="bg-white border border-[#3B1F0A]/8 p-4">
                 <p className="text-[11px] font-semibold text-[#3B1F0A]/45 tracking-widest uppercase mb-2">Order Summary</p>
