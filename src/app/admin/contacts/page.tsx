@@ -259,7 +259,7 @@ export default function AdminContactsPage() {
             HIGHLANDS
           </p>
           <span className="text-white/20 text-lg">|</span>
-          <div className="flex items-center gap-3 text-sm">
+          <div className="hidden md:flex items-center gap-3 text-sm">
             <Link href="/admin" className="text-white/50 hover:text-white transition-colors">Orders</Link>
             <span className="text-white/20">/</span>
             <Link href="/admin/applications" className="text-white/50 hover:text-white transition-colors">Applications</Link>

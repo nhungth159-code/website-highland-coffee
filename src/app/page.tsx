@@ -497,7 +497,7 @@ export default function Home() {
               <ul className="space-y-3 mb-10">
                 {[
                   "From 100,000₫ to 1,000,000₫",
-                  "Valid at all 500+ stores · Never expires",
+                  "Valid in-store & online · Never expires",
                   "Delivered instantly to the recipient",
                 ].map((item) => (
                   <li key={item} className="flex items-center gap-3 text-[#FAF6EF]/65 text-sm">

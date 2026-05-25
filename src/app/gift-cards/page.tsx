@@ -69,7 +69,7 @@ const STEPS = [
   {
     n: "03",
     title: "Send & Enjoy",
-    desc: "A unique code is generated instantly. Share it with your recipient — redeemable at any Highlands store.",
+    desc: "A unique code is generated instantly. Share it with your recipient — redeemable at any Highlands store or when paying for an online order.",
     icon: (
       <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
         <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" strokeLinecap="round" strokeLinejoin="round" />
@@ -358,7 +358,7 @@ export default function GiftCardsPage() {
             <span className="text-[#C8820A]">for Every Coffee Lover</span>
           </h1>
           <p className="text-white/50 text-base max-w-xl mx-auto leading-relaxed">
-            Give the warmth of a great cup. Highlands Gift Cards are redeemable at all 500+ stores nationwide — no expiry, no fuss.
+            Give the warmth of a great cup. Highlands Gift Cards are redeemable at all 500+ stores nationwide and online — no expiry, no fuss.
           </p>
         </div>
       </section>
@@ -690,7 +690,7 @@ export default function GiftCardsPage() {
             </h2>
             <p className="text-[#3B1F0A]/55 text-sm mb-8 leading-relaxed">
               Your {selected.label} gift card for <strong className="text-[#3B1F0A]">{form.recipientName}</strong> has been created.
-              Share the code below with them — redeemable at any Highlands store.
+              Share the code below with them — redeemable at any Highlands store or at checkout when ordering online.
             </p>
 
             <div className="mb-8">
@@ -827,7 +827,7 @@ export default function GiftCardsPage() {
             )}
 
             <p className="text-[#3B1F0A]/30 text-xs mt-4">
-              Gift cards have no expiry date and are redeemable at all 500+ Highlands stores.
+              Gift cards have no expiry date and are redeemable at all 500+ Highlands stores or online at checkout.
             </p>
           </div>
         </section>

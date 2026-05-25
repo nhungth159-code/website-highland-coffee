@@ -486,7 +486,7 @@ export default function AdminGiftCardsPage() {
               HIGHLANDS
             </p>
             <span className="text-white/20 text-lg">|</span>
-            <nav className="flex items-center gap-3 text-sm">
+            <nav className="hidden md:flex items-center gap-3 text-sm">
               <Link href="/admin" className="text-white/50 hover:text-white transition-colors">Orders</Link>
               <span className="text-white/20">/</span>
               <Link href="/admin/applications" className="text-white/50 hover:text-white transition-colors">Applications</Link>

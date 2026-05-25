@@ -375,7 +375,7 @@ export default function AdminReportsPage() {
           </Link>
           <p className="text-lg font-bold tracking-widest shrink-0" style={{ fontFamily: "var(--font-playfair), serif" }}>HIGHLANDS</p>
           <span className="text-white/20 text-lg shrink-0">|</span>
-          <div className="flex items-center gap-3 text-sm flex-wrap">
+          <div className="hidden md:flex items-center gap-3 text-sm flex-wrap">
             <Link href="/admin" className="text-white/50 hover:text-white transition-colors whitespace-nowrap">Orders</Link>
             <span className="text-white/20">/</span>
             <Link href="/admin/applications" className="text-white/50 hover:text-white transition-colors whitespace-nowrap">Applications</Link>
