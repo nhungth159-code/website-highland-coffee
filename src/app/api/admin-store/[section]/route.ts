@@ -6,7 +6,8 @@ export async function GET(
   { params }: { params: Promise<{ section: string }> }
 ) {
   const { section } = await params;
-  return NextResponse.json(getSection(section));
+  const data = await getSection(section);
+  return NextResponse.json(data);
 }
 
 export async function POST(
@@ -20,9 +21,9 @@ export async function POST(
   }
 
   if (body.action === "replace" && Array.isArray(body.data)) {
-    setSection(section, body.data);
+    await setSection(section, body.data);
   } else if (body.action === "add" && body.item !== undefined) {
-    addToSection(section, body.item);
+    await addToSection(section, body.item);
   } else {
     return NextResponse.json({ error: "Unknown action" }, { status: 400 });
   }
