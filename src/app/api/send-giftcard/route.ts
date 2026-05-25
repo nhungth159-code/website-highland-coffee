@@ -101,7 +101,7 @@ function buildEmail(
               Hi <strong>${recipientName}</strong>,
             </p>
             <p style="margin:0 0 18px;font-family:sans-serif;font-size:15px;color:rgba(59,31,10,0.75);line-height:1.7;">
-              You've been gifted a <strong style="color:#3B1F0A;">Highlands Coffee Gift Card</strong> worth <strong style="color:#C8820A;">${formatted}</strong>. Use it at any of our 500+ stores nationwide — no expiry, no fuss.
+              You've been gifted a <strong style="color:#3B1F0A;">Highlands Coffee Gift Card</strong> worth <strong style="color:#C8820A;">${formatted}</strong>. Use it at any of our 500+ stores nationwide or when ordering online — no expiry, no fuss.
             </p>
 
             ${messageBlock}
@@ -112,7 +112,7 @@ function buildEmail(
                 <td align="center" style="background:#1A0D00;border-radius:12px;padding:28px;">
                   <p style="margin:0 0 8px;font-family:sans-serif;font-size:11px;font-weight:600;letter-spacing:0.35em;text-transform:uppercase;color:rgba(250,246,239,0.45);">Your Gift Card Code</p>
                   <p style="margin:0;font-family:monospace;font-size:28px;font-weight:bold;color:#C8820A;letter-spacing:0.2em;">${code}</p>
-                  <p style="margin:10px 0 0;font-family:sans-serif;font-size:12px;color:rgba(250,246,239,0.35);">Show this code at any Highlands counter to redeem</p>
+                  <p style="margin:10px 0 0;font-family:sans-serif;font-size:12px;color:rgba(250,246,239,0.35);">Redeem in any Highlands store or online at checkout</p>
                 </td>
               </tr>
             </table>
@@ -122,11 +122,17 @@ function buildEmail(
               <tr>
                 <td style="background:#FAF6EF;border-left:4px solid #C8820A;padding:18px 20px;">
                   <p style="margin:0 0 8px;font-family:sans-serif;font-size:13px;font-weight:600;color:#3B1F0A;">How to redeem</p>
-                  <p style="margin:0 0 6px;font-family:sans-serif;font-size:14px;color:rgba(59,31,10,0.65);line-height:1.7;">
+                  <p style="margin:0 0 10px;font-family:sans-serif;font-size:13px;font-weight:600;color:#C8820A;letter-spacing:0.05em;">In store</p>
+                  <p style="margin:0 0 12px;font-family:sans-serif;font-size:14px;color:rgba(59,31,10,0.65);line-height:1.7;">
                     1. Visit any Highlands Coffee store nationwide.<br>
                     2. Order your favourite drinks or food.<br>
-                    3. Show your gift card code at the counter when paying.<br>
-                    4. Your balance will be deducted — use it across multiple visits!
+                    3. Show the code at the counter — your balance is deducted instantly.
+                  </p>
+                  <p style="margin:0 0 10px;font-family:sans-serif;font-size:13px;font-weight:600;color:#C8820A;letter-spacing:0.05em;">Online</p>
+                  <p style="margin:0;font-family:sans-serif;font-size:14px;color:rgba(59,31,10,0.65);line-height:1.7;">
+                    1. Place an order on the Highlands Coffee website.<br>
+                    2. At checkout, select <strong style="color:#3B1F0A;">Gift Card</strong> as your payment method.<br>
+                    3. Enter the code above — your balance is applied automatically.
                   </p>
                 </td>
               </tr>
@@ -144,7 +150,7 @@ function buildEmail(
         <tr>
           <td style="background:#1A0D00;padding:20px 36px;text-align:center;">
             <p style="margin:0;font-family:sans-serif;font-size:11px;color:rgba(250,246,239,0.3);">
-              © 2026 Highlands Coffee Corporation · Redeemable at all Highlands Coffee stores · No cash value · No expiry
+              © 2026 Highlands Coffee Corporation · Redeemable in-store and online · No cash value · No expiry
             </p>
           </td>
         </tr>

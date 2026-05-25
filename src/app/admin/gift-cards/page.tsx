@@ -374,10 +374,29 @@ export default function AdminGiftCardsPage() {
   const load = () => setCards(getGiftCards());
 
   useEffect(() => {
-    load();
+    const local = getGiftCards();
+    setCards(local);
     setMounted(true);
     const onStorage = () => load();
     window.addEventListener("storage", onStorage);
+    // Cross-device sync
+    fetch("/api/admin-store/gift-cards")
+      .then((r) => r.json())
+      .then((srv: GiftCard[]) => {
+        if (!Array.isArray(srv)) return;
+        const byCode = new Map(srv.map((c) => [c.code, c]));
+        for (const l of local) byCode.set(l.code, l);
+        const merged = [...byCode.values()].sort(
+          (a, b) => new Date(b.purchasedAt).getTime() - new Date(a.purchasedAt).getTime()
+        );
+        localStorage.setItem("highlands_giftcards", JSON.stringify(merged));
+        setCards(merged);
+        fetch("/api/admin-store/gift-cards", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "replace", data: merged }),
+        }).catch(() => {});
+      })
+      .catch(() => {});
     return () => window.removeEventListener("storage", onStorage);
   }, []);
 

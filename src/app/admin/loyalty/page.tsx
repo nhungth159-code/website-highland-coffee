@@ -793,7 +793,8 @@ export default function AdminLoyaltyPage() {
     customers.filter(c => c.orderCount > 1).length, [customers]);
 
   useEffect(() => {
-    setCustomers(getCustomers());
+    const localCustomers = getCustomers();
+    setCustomers(localCustomers);
     setTransactions(getTransactions());
     setRewards(getRewards());
     setTiers(getTiers());
@@ -801,6 +802,30 @@ export default function AdminLoyaltyPage() {
     setConfig(cfg);
     setConfigDraft(cfg);
     setMounted(true);
+    // Cross-device sync for loyalty customers
+    fetch("/api/admin-store/loyalty-customers")
+      .then((r) => r.json())
+      .then((srv: LoyaltyCustomer[]) => {
+        if (!Array.isArray(srv) || srv.length === 0) {
+          if (localCustomers.length > 0) fetch("/api/admin-store/loyalty-customers", {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "replace", data: localCustomers }),
+          }).catch(() => {});
+          return;
+        }
+        const byId = new Map(srv.map((c) => [c.id, c]));
+        for (const l of localCustomers) byId.set(l.id, l);
+        const merged = [...byId.values()].sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        localStorage.setItem("highlands_loyalty_customers_v2", JSON.stringify(merged));
+        setCustomers(merged);
+        fetch("/api/admin-store/loyalty-customers", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "replace", data: merged }),
+        }).catch(() => {});
+      })
+      .catch(() => {});
   }, []);
 
   if (!mounted) return null;

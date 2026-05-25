@@ -229,6 +229,15 @@ export default function GiftCardsPage() {
       balance: selected.amount,
     });
     setStep("success");
+    // Sync to server so admin can see on any device
+    fetch("/api/admin-store/gift-cards", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "add",
+        item: { code, amount: selected.amount, senderName: form.senderName, recipientName: form.recipientName, recipientEmail: form.recipientEmail, message: form.message, purchasedAt: new Date().toISOString(), balance: selected.amount },
+      }),
+    }).catch(() => {});
     // Fire-and-forget — email failure doesn't block the success screen
     fetch("/api/send-giftcard", {
       method: "POST",

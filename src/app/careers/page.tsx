@@ -250,6 +250,26 @@ export default function CareersPage() {
       appliedAt: new Date().toISOString(),
       status: "new",
     });
+    // Sync to server so admin can see on any device
+    fetch("/api/admin-store/applications", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "add",
+        item: {
+          id: appId,
+          jobTitle: applyJob!.title,
+          dept: applyJob!.dept,
+          location: applyJob!.location,
+          name: form.name,
+          email: form.email,
+          phone: form.phone,
+          cover: form.cover,
+          appliedAt: new Date().toISOString(),
+          status: "new",
+        },
+      }),
+    }).catch(() => {});
     // Fire-and-forget — don't block the UI on email delivery
     fetch("/api/send-confirmation", {
       method: "POST",

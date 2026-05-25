@@ -300,8 +300,34 @@ export default function AdminPromotionsPage() {
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    setPromos(getPromotions());
+    const local = getPromotions();
+    setPromos(local);
     setMounted(true);
+    // Cross-device sync
+    fetch("/api/admin-store/promotions")
+      .then((r) => r.json())
+      .then((srv: Promotion[]) => {
+        if (!Array.isArray(srv) || srv.length === 0) {
+          // Server empty — push local so other devices get it
+          if (local.length > 0) fetch("/api/admin-store/promotions", {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "replace", data: local }),
+          }).catch(() => {});
+          return;
+        }
+        const byId = new Map(srv.map((p) => [p.id, p]));
+        for (const l of local) byId.set(l.id, l);
+        const merged = [...byId.values()].sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        localStorage.setItem("highlands_promotions", JSON.stringify(merged));
+        setPromos(merged);
+        fetch("/api/admin-store/promotions", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "replace", data: merged }),
+        }).catch(() => {});
+      })
+      .catch(() => {});
   }, []);
 
   // ── Derived state (hooks must be before any early return) ──

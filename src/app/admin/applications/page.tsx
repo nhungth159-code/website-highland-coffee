@@ -78,6 +78,25 @@ export default function ApplicationsAdminPage() {
     load();
     const onStorage = () => load();
     window.addEventListener("storage", onStorage);
+    // Cross-device sync: merge local with server store so mobile admin sees all data
+    const local = getApplications();
+    fetch("/api/admin-store/applications")
+      .then((r) => r.json())
+      .then((srv: Application[]) => {
+        if (!Array.isArray(srv)) return;
+        const byId = new Map(srv.map((a) => [a.id, a]));
+        for (const l of local) byId.set(l.id, l); // local wins on same id
+        const merged = [...byId.values()].sort(
+          (a, b) => new Date(b.appliedAt).getTime() - new Date(a.appliedAt).getTime()
+        );
+        localStorage.setItem("highlands_applications", JSON.stringify(merged));
+        setApps(merged);
+        fetch("/api/admin-store/applications", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "replace", data: merged }),
+        }).catch(() => {});
+      })
+      .catch(() => {});
     return () => window.removeEventListener("storage", onStorage);
   }, []);
 

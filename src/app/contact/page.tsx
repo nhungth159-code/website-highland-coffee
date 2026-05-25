@@ -105,6 +105,15 @@ export default function ContactPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: form.name, email: form.email, subject: form.subject, refId: id }),
     }).catch(() => {});
+    // Sync to server so admin can see on any device
+    fetch("/api/admin-store/contacts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "add",
+        item: { id, refId: id, name: form.name, email: form.email, subject: form.subject, message: form.message, submittedAt: new Date().toISOString(), status: "new" },
+      }),
+    }).catch(() => {});
 
     setState("success");
   };

@@ -75,7 +75,29 @@ export default function AdminContactsPage() {
   const [checkResult, setCheckResult] = useState<string | null>(null);
   const lastPolledRef = useRef<number>(0);
 
-  useEffect(() => { setMessages(getContacts()); setMounted(true); }, []);
+  useEffect(() => {
+    const local = getContacts();
+    setMessages(local);
+    setMounted(true);
+    // Cross-device sync
+    fetch("/api/admin-store/contacts")
+      .then((r) => r.json())
+      .then((srv: ContactMessage[]) => {
+        if (!Array.isArray(srv)) return;
+        const byId = new Map(srv.map((m) => [m.id, m]));
+        for (const l of local) byId.set(l.id, l);
+        const merged = [...byId.values()].sort(
+          (a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
+        );
+        localStorage.setItem("highlands_contacts", JSON.stringify(merged));
+        setMessages(merged);
+        fetch("/api/admin-store/contacts", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "replace", data: merged }),
+        }).catch(() => {});
+      })
+      .catch(() => {});
+  }, []);
 
   // Total unseen inbound replies across all messages
   const unseenCount = useMemo(
