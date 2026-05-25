@@ -142,6 +142,29 @@ const DEPT_COLOR: Record<Dept, string> = {
 const CV_MAX_BYTES = 5 * 1024 * 1024; // 5 MB
 const ACCEPTED = ".pdf,.doc,.docx";
 
+const TYPO_DOMAINS: Record<string, string> = {
+  "mgail.com": "gmail.com",
+  "gmai.com":  "gmail.com",
+  "gmial.com": "gmail.com",
+  "gamil.com": "gmail.com",
+  "gnail.com": "gmail.com",
+  "gmil.com":  "gmail.com",
+  "gmail.co":  "gmail.com",
+  "gmail.om":  "gmail.com",
+  "yahooo.com": "yahoo.com",
+  "yaho.com":   "yahoo.com",
+  "hotmial.com": "hotmail.com",
+  "hotmai.com":  "hotmail.com",
+};
+
+function suggestEmailFix(email: string): string | null {
+  const at = email.lastIndexOf("@");
+  if (at === -1) return null;
+  const domain = email.slice(at + 1).toLowerCase();
+  const correct = TYPO_DOMAINS[domain];
+  return correct ? email.slice(0, at + 1) + correct : null;
+}
+
 function fmtBytes(b: number) {
   if (b < 1024) return `${b} B`;
   if (b < 1024 * 1024) return `${(b / 1024).toFixed(0)} KB`;
@@ -159,6 +182,7 @@ export default function CareersPage() {
   const [cvData, setCvData] = useState("");
   const [cvError, setCvError] = useState("");
   const [dragOver, setDragOver] = useState(false);
+  const [emailSuggestion, setEmailSuggestion] = useState<string | null>(null);
 
   const filtered = activeTab === "All" ? JOBS : JOBS.filter((j) => j.dept === activeTab);
 
@@ -170,6 +194,7 @@ export default function CareersPage() {
     setCvName("");
     setCvData("");
     setCvError("");
+    setEmailSuggestion(null);
   };
 
   const handleFile = (file: File) => {
@@ -486,11 +511,36 @@ export default function CareersPage() {
                     <input
                       type="email"
                       value={form.email}
-                      onChange={(e) => { setForm((f) => ({ ...f, email: e.target.value })); setErrors((er) => ({ ...er, email: "" })); }}
+                      onChange={(e) => {
+                        setForm((f) => ({ ...f, email: e.target.value }));
+                        setErrors((er) => ({ ...er, email: "" }));
+                        setEmailSuggestion(suggestEmailFix(e.target.value));
+                      }}
                       placeholder="your@email.com"
                       className={`w-full border px-4 py-3 text-sm text-[#3B1F0A] bg-white placeholder-[#3B1F0A]/25 outline-none focus:border-[#C8820A] transition-colors ${errors.email ? "border-red-400" : "border-[#3B1F0A]/15"}`}
                     />
                     {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+                    {!errors.email && emailSuggestion && (
+                      <p className="text-amber-700 text-xs mt-1.5 flex items-center gap-1">
+                        Did you mean{" "}
+                        <button
+                          type="button"
+                          className="font-semibold underline underline-offset-2"
+                          onClick={() => { setForm((f) => ({ ...f, email: emailSuggestion })); setEmailSuggestion(null); }}
+                        >
+                          {emailSuggestion}
+                        </button>
+                        ?
+                        <button
+                          type="button"
+                          aria-label="Dismiss"
+                          className="ml-1 text-amber-600/50 hover:text-amber-700"
+                          onClick={() => setEmailSuggestion(null)}
+                        >
+                          ✕
+                        </button>
+                      </p>
+                    )}
                   </div>
 
                   {/* Phone */}

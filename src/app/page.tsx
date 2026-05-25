@@ -471,6 +471,152 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ─── GIFT CARDS ──────────────────────────────────────────────── */}
+      <section className="py-24 lg:py-32 px-6 lg:px-8 bg-[#1A0D00] overflow-hidden relative">
+        <div className="absolute inset-0 pointer-events-none select-none overflow-hidden">
+          <div className="absolute w-[900px] h-[900px] rounded-full border border-[#C8820A]/[0.03] -top-1/3 -right-1/4" />
+          <div className="absolute w-[600px] h-[600px] rounded-full border border-[#C8820A]/[0.05] top-1/4 right-0" />
+        </div>
+
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-20 items-center">
+
+            {/* Copy */}
+            <div>
+              <p className="text-[#C8820A] text-[11px] font-semibold tracking-[0.35em] uppercase mb-5">Highlands Gift Cards</p>
+              <h2
+                className="text-4xl md:text-5xl font-bold text-[#FAF6EF] leading-tight mb-6"
+                style={{ fontFamily: "var(--font-playfair), serif" }}
+              >
+                Give the Gift<br />
+                <em className="not-italic text-[#C8820A]">of Great Coffee</em>
+              </h2>
+              <p className="text-[#FAF6EF]/55 text-base leading-relaxed mb-8">
+                The perfect present for any occasion. Highlands Gift Cards are redeemable at all 500+ stores nationwide — no expiry date, no hidden fees.
+              </p>
+              <ul className="space-y-3 mb-10">
+                {[
+                  "From 100,000₫ to 1,000,000₫",
+                  "Valid at all 500+ stores · Never expires",
+                  "Delivered instantly to the recipient",
+                ].map((item) => (
+                  <li key={item} className="flex items-center gap-3 text-[#FAF6EF]/65 text-sm">
+                    <span className="w-5 h-5 rounded-full bg-[#C8820A]/20 flex items-center justify-center shrink-0">
+                      <svg width="10" height="10" fill="none" stroke="#C8820A" strokeWidth="2.5" viewBox="0 0 24 24">
+                        <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                <Link href="/gift-cards" className="inline-flex items-center justify-center gap-3 bg-[#C8820A] text-white px-8 py-4 text-sm font-semibold tracking-wider hover:bg-[#FAF6EF] hover:text-[#1A0D00] transition-all duration-200 group">
+                  Buy a Gift Card
+                  <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="group-hover:translate-x-1 transition-transform duration-200">
+                    <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </Link>
+                <Link href="/gift-cards" className="text-[#FAF6EF]/40 hover:text-[#C8820A] text-sm font-medium transition-colors flex items-center gap-1.5">
+                  Check balance
+                  <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </Link>
+              </div>
+            </div>
+
+            {/* Card fan visual */}
+            <div className="flex items-center justify-center lg:justify-end">
+              <div className="relative w-full max-w-[360px]">
+                {/* Card back — green */}
+                <div
+                  className="absolute inset-0 rounded-2xl shadow-2xl overflow-hidden aspect-[1.586/1]"
+                  style={{
+                    background: "linear-gradient(135deg, #2D5016 0%, #1A3009 100%)",
+                    transform: "rotate(8deg) translateY(8px)",
+                    zIndex: 1,
+                  }}
+                >
+                  <div className="absolute inset-0 opacity-10">
+                    {[100, 180, 260].map((s) => (
+                      <div key={s} className="absolute rounded-full border border-white"
+                        style={{ width: s, height: s, top: "50%", left: "60%", transform: "translate(-50%,-50%)" }} />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Card middle — amber */}
+                <div
+                  className="absolute inset-0 rounded-2xl shadow-2xl overflow-hidden aspect-[1.586/1]"
+                  style={{
+                    background: "linear-gradient(135deg, #C8820A 0%, #8B5A05 100%)",
+                    transform: "rotate(3deg) translateY(4px)",
+                    zIndex: 2,
+                  }}
+                >
+                  <div className="absolute inset-0 opacity-10">
+                    {[100, 180, 260].map((s) => (
+                      <div key={s} className="absolute rounded-full border border-white"
+                        style={{ width: s, height: s, top: "50%", left: "60%", transform: "translate(-50%,-50%)" }} />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Card front — dark brown with full content */}
+                <div
+                  className="relative rounded-2xl shadow-2xl overflow-hidden aspect-[1.586/1]"
+                  style={{ background: "linear-gradient(135deg, #1A0D00 0%, #3B1F0A 100%)", zIndex: 3 }}
+                >
+                  <div className="absolute inset-0 opacity-10">
+                    {[100, 180, 260, 340].map((s) => (
+                      <div key={s} className="absolute rounded-full border border-white"
+                        style={{ width: s, height: s, top: "50%", left: "60%", transform: "translate(-50%,-50%)" }} />
+                    ))}
+                  </div>
+                  <svg className="absolute right-4 bottom-4 opacity-10" width="80" height="80" fill="none" stroke="white" strokeWidth="1" viewBox="0 0 24 24">
+                    <path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z" strokeLinecap="round" />
+                    <path d="M6 1v3M10 1v3M14 1v3" strokeLinecap="round" />
+                  </svg>
+                  <div className="relative z-10 flex flex-col justify-between h-full p-7">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="font-bold tracking-[0.2em] text-white" style={{ fontSize: 16 }}>HIGHLANDS</p>
+                        <p className="tracking-widest uppercase font-medium" style={{ color: "#C8820A", fontSize: 9, marginTop: 2 }}>Coffee · Gift Card</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-white" style={{ fontFamily: "var(--font-playfair), serif", fontSize: 26 }}>200,000₫</p>
+                        <p className="text-white/50 uppercase tracking-widest" style={{ fontSize: 8 }}>Classic</p>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-white/55 font-medium mb-1" style={{ fontSize: 11 }}>For Your Loved One</p>
+                      <p className="font-mono tracking-[0.2em] text-white/30" style={{ fontSize: 10 }}>████ ████ ████ ████</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Denomination strip */}
+          <div className="mt-16 pt-14 border-t border-[#FAF6EF]/6 flex flex-wrap items-center justify-center gap-4">
+            <p className="text-[#FAF6EF]/25 text-[11px] font-semibold tracking-[0.3em] uppercase w-full text-center mb-1">Available denominations</p>
+            {[
+              { label: "100,000₫", tier: "Starter" },
+              { label: "200,000₫", tier: "Classic" },
+              { label: "500,000₫", tier: "Premium" },
+              { label: "1,000,000₫", tier: "Gold" },
+            ].map((c) => (
+              <div key={c.label} className="flex items-center gap-2.5 bg-[#FAF6EF]/5 border border-[#FAF6EF]/10 px-5 py-2.5 hover:border-[#C8820A]/40 transition-colors">
+                <span className="text-[#C8820A] font-bold text-sm">{c.label}</span>
+                <span className="text-[#FAF6EF]/30 text-[10px] tracking-wider uppercase">{c.tier}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <CartDrawer
         cart={cart}
         isOpen={cartOpen}
