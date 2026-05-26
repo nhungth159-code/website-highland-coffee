@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSection, setSection } from "@/lib/admin-store";
 import type { LoyaltyCustomer, StarTransaction } from "@/lib/loyalty";
 
-const CUSTOMERS_KEY = "loyalty_customers";
-const TRANSACTIONS_KEY = "loyalty_transactions";
+const CUSTOMERS_KEY = "loyalty-customers";
+const TRANSACTIONS_KEY = "loyalty-transactions";
 const WELCOME_BONUS = 100;
 
 function normalizePhone(phone: string): string {
