@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
 import { NextRequest, NextResponse } from "next/server";
+import { isValidEmailFormat, isSuspiciousDomain } from "@/lib/email-validation";
 
 // ── Shared layout helpers ────────────────────────────────────────────────────
 function infoBox(heading: string, body: string): string {
@@ -168,6 +169,15 @@ export async function POST(request: NextRequest) {
 
   if (!name || !email || !jobTitle || !appId || !status) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+  }
+
+  if (!isValidEmailFormat(email)) {
+    return NextResponse.json({ error: `Invalid email address: ${email}` }, { status: 400 });
+  }
+
+  const suspicion = isSuspiciousDomain(email);
+  if (suspicion) {
+    return NextResponse.json({ skipped: true, reason: suspicion });
   }
 
   const template = buildEmail(status, name, jobTitle, appId);

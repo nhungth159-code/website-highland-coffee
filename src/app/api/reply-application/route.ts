@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
 import { NextRequest, NextResponse } from "next/server";
+import { isValidEmailFormat, isSuspiciousDomain } from "@/lib/email-validation";
 
 function buildReplyEmail(
   toName: string,
@@ -89,6 +90,15 @@ export async function POST(request: NextRequest) {
 
   if (!toName || !toEmail || !body || !appId) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+  }
+
+  if (!isValidEmailFormat(toEmail)) {
+    return NextResponse.json({ error: `Invalid email address: ${toEmail}` }, { status: 400 });
+  }
+
+  const suspicion = isSuspiciousDomain(toEmail);
+  if (suspicion) {
+    return NextResponse.json({ error: `Refusing to send — ${suspicion}. Correct the applicant's email before messaging them.` }, { status: 422 });
   }
 
   const transporter = nodemailer.createTransport({

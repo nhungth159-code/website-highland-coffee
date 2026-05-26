@@ -150,6 +150,12 @@ export default function Home() {
                 {l.label}
               </a>
             ))}
+            <Link href="/membership" className="text-sm font-medium text-[#C8820A] hover:text-[#3B1F0A] transition-colors duration-200 tracking-wide flex items-center gap-1.5">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+              </svg>
+              Stars
+            </Link>
           </div>
 
           <div className="hidden md:flex items-center gap-3">
@@ -204,6 +210,12 @@ export default function Home() {
             {[{ label: t.nav.menu, href: "/menu" }, { label: t.nav.locations, href: "#locations" }, { label: t.nav.promotions, href: "#promotions" }].map((l) => (
               <a key={l.label} href={l.href} className="text-sm font-medium text-[#3B1F0A]" onClick={() => setMobileOpen(false)}>{l.label}</a>
             ))}
+            <Link href="/membership" className="text-sm font-semibold text-[#C8820A] flex items-center gap-1.5" onClick={() => setMobileOpen(false)}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+              </svg>
+              Membership
+            </Link>
             <button onClick={() => { setCartOpen(true); setMobileOpen(false); }} className="bg-[#C8820A] text-white text-sm font-semibold tracking-wider py-3 w-full mt-1">
               {t.nav.orderNow}
             </button>

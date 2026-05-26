@@ -69,7 +69,7 @@ const TRANSLATIONS: Record<Lang, Translations> = {
       cols: [
         { heading: "Menu", links: [{ label: "Coffee", href: "/menu#coffee" }, { label: "Tea & More", href: "/menu#tea" }, { label: "Food & Snacks", href: "/menu#food" }, { label: "Seasonal Specials", href: "/menu#seasonal" }] },
         { heading: "Company", links: [{ label: "About Us", href: "/about" }, { label: "Careers", href: "/careers" }, { label: "Sustainability", href: "/sustainability" }, { label: "Press", href: "/press" }] },
-        { heading: "Support", links: [{ label: "Find a Store", href: "/stores" }, { label: "FAQs", href: "/faqs" }, { label: "Gift Cards", href: "/gift-cards" }, { label: "Contact Us", href: "/contact" }] },
+        { heading: "Support", links: [{ label: "Find a Store", href: "/stores" }, { label: "FAQs", href: "/faqs" }, { label: "Gift Cards", href: "/gift-cards" }, { label: "Contact Us", href: "/contact" }, { label: "Membership", href: "/membership" }] },
       ],
       copyright: "© 2026 Highlands Coffee Corporation. All rights reserved.",
     },
@@ -141,7 +141,7 @@ const TRANSLATIONS: Record<Lang, Translations> = {
       cols: [
         { heading: "Menu", links: [{ label: "Cà Phê", href: "/menu#coffee" }, { label: "Trà & Đồ Uống Khác", href: "/menu#tea" }, { label: "Đồ Ăn & Bánh", href: "/menu#food" }, { label: "Đặc Biệt Theo Mùa", href: "/menu#seasonal" }] },
         { heading: "Công Ty", links: [{ label: "Về Chúng Tôi", href: "#" }, { label: "Tuyển Dụng", href: "/careers" }, { label: "Bền Vững", href: "/sustainability" }, { label: "Báo Chí", href: "#" }] },
-        { heading: "Hỗ Trợ", links: [{ label: "Tìm Cửa Hàng", href: "/stores" }, { label: "Câu Hỏi Thường Gặp", href: "/faqs" }, { label: "Thẻ Quà Tặng", href: "#" }, { label: "Liên Hệ", href: "/contact" }] },
+        { heading: "Hỗ Trợ", links: [{ label: "Tìm Cửa Hàng", href: "/stores" }, { label: "Câu Hỏi Thường Gặp", href: "/faqs" }, { label: "Thẻ Quà Tặng", href: "#" }, { label: "Liên Hệ", href: "/contact" }, { label: "Thành Viên", href: "/membership" }] },
       ],
       copyright: "© 2026 Highlands Coffee Corporation. Bảo lưu mọi quyền.",
     },
@@ -213,7 +213,7 @@ const TRANSLATIONS: Record<Lang, Translations> = {
       cols: [
         { heading: "เมนู", links: [{ label: "กาแฟ", href: "/menu#coffee" }, { label: "ชาและเครื่องดื่ม", href: "/menu#tea" }, { label: "อาหารและของว่าง", href: "/menu#food" }, { label: "พิเศษตามฤดูกาล", href: "/menu#seasonal" }] },
         { heading: "บริษัท", links: [{ label: "เกี่ยวกับเรา", href: "#" }, { label: "ร่วมงานกับเรา", href: "/careers" }, { label: "ความยั่งยืน", href: "/sustainability" }, { label: "ข่าวสาร", href: "#" }] },
-        { heading: "ช่วยเหลือ", links: [{ label: "ค้นหาสาขา", href: "/stores" }, { label: "คำถามที่พบบ่อย", href: "/faqs" }, { label: "บัตรของขวัญ", href: "#" }, { label: "ติดต่อเรา", href: "/contact" }] },
+        { heading: "ช่วยเหลือ", links: [{ label: "ค้นหาสาขา", href: "/stores" }, { label: "คำถามที่พบบ่อย", href: "/faqs" }, { label: "บัตรของขวัญ", href: "#" }, { label: "ติดต่อเรา", href: "/contact" }, { label: "สมาชิก", href: "/membership" }] },
       ],
       copyright: "© 2569 Highlands Coffee Corporation สงวนลิขสิทธิ์ทุกประการ",
     },

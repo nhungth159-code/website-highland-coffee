@@ -10,6 +10,7 @@ import {
   markApplicationRepliesSeen,
   deleteApplication,
 } from "@/lib/applications";
+import { isSuspiciousDomain } from "@/lib/email-validation";
 import type { Application, ApplicationStatus, AppReplyLog } from "@/lib/applications";
 import type { InboundReply } from "@/app/api/fetch-replies/route";
 
@@ -726,6 +727,14 @@ export default function ApplicationsAdminPage() {
                 </p>
                 <p className="text-white/40 text-xs mt-0.5">{replyDraft.app.jobTitle}</p>
               </div>
+              {(() => {
+                const warn = isSuspiciousDomain(replyDraft.app.email);
+                return warn ? (
+                  <div className="ml-4 flex-1 bg-red-900/60 border border-red-500/40 px-3 py-2 text-xs text-red-200 leading-snug">
+                    ⚠ {warn}. Fix the email before sending.
+                  </div>
+                ) : null;
+              })()}
               {replyDraft.sendState !== "sending" && (
                 <button onClick={() => setReplyDraft(null)} className="text-white/40 hover:text-white transition-colors mt-0.5">
                   <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -783,7 +792,7 @@ export default function ApplicationsAdminPage() {
                     </button>
                     <button
                       onClick={sendReply}
-                      disabled={replyDraft.sendState === "sending" || !replyDraft.body.trim()}
+                      disabled={replyDraft.sendState === "sending" || !replyDraft.body.trim() || !!isSuspiciousDomain(replyDraft.app.email)}
                       className="flex items-center gap-2 bg-[#3B1F0A] text-white text-sm font-semibold px-5 py-2 hover:bg-[#C8820A] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {replyDraft.sendState === "sending" ? (
