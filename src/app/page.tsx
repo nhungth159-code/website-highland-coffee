@@ -156,6 +156,9 @@ export default function Home() {
               </svg>
               Membership
             </Link>
+            <Link href="/careers" className="text-sm font-medium text-[#3B1F0A]/65 hover:text-[#C8820A] transition-colors duration-200 tracking-wide">
+              Careers
+            </Link>
           </div>
 
           <div className="hidden md:flex items-center gap-3">
@@ -215,6 +218,9 @@ export default function Home() {
                 <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
               </svg>
               Membership
+            </Link>
+            <Link href="/careers" className="text-sm font-medium text-[#3B1F0A]" onClick={() => setMobileOpen(false)}>
+              Careers
             </Link>
             <button onClick={() => { setCartOpen(true); setMobileOpen(false); }} className="bg-[#C8820A] text-white text-sm font-semibold tracking-wider py-3 w-full mt-1">
               {t.nav.orderNow}
